@@ -1,6 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CustomLabels xmlns="http://soap.sforce.com/2006/04/metadata">
     <labels>
+        <fullName>Intake_Services_Box_Type</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Intake Services Box Type</shortDescription>
+        <value>Box Type/Size</value>
+    </labels>
+    <labels>
         <fullName>PageMessagesConfirm</fullName>
         <categories>PageMessages</categories>
         <language>en_US</language>
@@ -88,14 +95,15 @@
         <shortDescription>label for Update button</shortDescription>
         <value>Update</value>
     </labels>
-   <labels>
+    <labels>
         <fullName>labelButtonSave</fullName>
         <categories>MassMergeAccounts</categories>
         <language>en_US</language>
         <protected>false</protected>
         <shortDescription>The label for the Save button used on several pages.</shortDescription>
         <value>Save</value>
-    </labels>    <labels>
+    </labels>
+    <labels>
         <fullName>labelButtonSaveAndClose</fullName>
         <categories>MassMergeAccounts</categories>
         <language>en_US</language>
@@ -128,6 +136,14 @@
         <value>Last</value>
     </labels>
     <labels>
+        <fullName>labelListViewNext</fullName>
+        <categories>MassMergeAccounts</categories>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>label for Next link in list view</shortDescription>
+        <value>Next</value>
+    </labels>
+    <labels>
         <fullName>labelListViewPageInfo</fullName>
         <categories>MassMergeAccounts</categories>
         <language>en_US</language>
@@ -144,12 +160,12 @@
         <value>Previous</value>
     </labels>
     <labels>
-        <fullName>labelListViewNext</fullName>
+        <fullName>labelMassMergeErrorOnSave</fullName>
         <categories>MassMergeAccounts</categories>
         <language>en_US</language>
         <protected>false</protected>
-        <shortDescription>label for Next link in list view</shortDescription>
-        <value>Next</value>
+        <shortDescription>error message when Mass Merge Accounts save fails.</shortDescription>
+        <value>Errors were encountered trying to save the Requests.</value>
     </labels>
     <labels>
         <fullName>labelMassMergeFilterConfidenceFrom</fullName>
@@ -160,28 +176,12 @@
         <value>Merge Confidence From</value>
     </labels>
     <labels>
-        <fullName>labelMassMergeTitle</fullName>
-        <categories>MassMergeAccounts</categories>
-        <language>en_US</language>
-        <protected>false</protected>
-        <shortDescription>title for the Mass Edit page</shortDescription>
-        <value>Mass Merge Accounts</value>
-    </labels>    
-    <labels>
         <fullName>labelMassMergeFilterConfidenceTo</fullName>
         <categories>MassMergeAccounts</categories>
         <language>en_US</language>
         <protected>false</protected>
         <shortDescription>label for the merge confidence filter section To field.</shortDescription>
         <value>To</value>
-    </labels>
-    <labels>
-        <fullName>labelMassMergeErrorOnSave</fullName>
-        <categories>MassMergeAccounts</categories>
-        <language>en_US</language>
-        <protected>false</protected>
-        <shortDescription>error message when Mass Merge Accounts save fails.</shortDescription>
-        <value>Errors were encountered trying to save the Requests.</value>
     </labels>
     <labels>
         <fullName>labelMassMergeHelp</fullName>
@@ -208,6 +208,14 @@
         <value>Requests records have been saved.</value>
     </labels>
     <labels>
+        <fullName>labelMassMergeTitle</fullName>
+        <categories>MassMergeAccounts</categories>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>title for the Mass Edit page</shortDescription>
+        <value>Mass Merge Accounts</value>
+    </labels>
+    <labels>
         <fullName>labelMessageLoading</fullName>
         <categories>MassMergeAccounts</categories>
         <language>en_US</language>
@@ -230,5 +238,5 @@
         <protected>false</protected>
         <shortDescription>label for Show More on list views</shortDescription>
         <value>Show more</value>
-    </labels>    
+    </labels>
 </CustomLabels>

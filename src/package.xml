@@ -20,9 +20,9 @@
     <types>
         <members>Account.C501_Merge_Action__c</members>
         <members>Account.C501_Merge_Billing_Address__c</members>
-        <members>Account.C501_Merge_Confidence__c</members>
         <members>Account.C501_Merge_Confidence_From__c</members>
         <members>Account.C501_Merge_Confidence_To__c</members>
+        <members>Account.C501_Merge_Confidence__c</members>
         <members>Account.C501_Merge_Phone__c</members>
         <members>Account.C501_Merge_Program__c</members>
         <members>Account.C501_Merge_Targets__c</members>
@@ -32,34 +32,34 @@
         <name>CustomField</name>
     </types>
     <types>
-        <members>labelMassMergeFilterConfidenceFrom</members>
-        <members>labelMassMergeFilterConfidenceTo</members>
+        <members>PageMessagesConfirm</members>
+        <members>PageMessagesError</members>
+        <members>PageMessagesFatal</members>
+        <members>PageMessagesWarning</members>
+        <members>PermissionCreateException</members>
+        <members>PermissionDeleteException</members>
+        <members>PermissionReadException</members>
+        <members>PermissionUpdateException</members>
+        <members>labelButtonCancel</members>
+        <members>labelButtonClose</members>
+        <members>labelButtonEdit</members>
         <members>labelButtonSave</members>
         <members>labelButtonSaveAndClose</members>
-        <members>labelButtonEdit</members>
-        <members>labelButtonClose</members>
-        <members>labelButtonCancel</members>
-        <members>PermissionUpdateException</members>
-        <members>PermissionReadException</members>
-        <members>PermissionDeleteException</members>
-        <members>PermissionCreateException</members>
-        <members>PageMessagesWarning</members>
-        <members>PageMessagesFatal</members>
-        <members>PageMessagesError</members>
-        <members>PageMessagesConfirm</members>
-        <members>labelMessageSaving</members>
-        <members>labelMessageLoading</members>
-        <members>labelMassMergeSaveSuccess</members>
-        <members>labelMassMergeOptional</members>
-        <members>labelMassMergeHelp</members>
-        <members>labelMassMergeTitle</members>
-        <members>labelMassMergeErrorOnSave</members>
         <members>labelLinkAddMoreRows</members>
         <members>labelListViewFirst</members>
         <members>labelListViewLast</members>
         <members>labelListViewNext</members>
-        <members>labelListViewPrevious</members>
         <members>labelListViewPageInfo</members>
+        <members>labelListViewPrevious</members>
+        <members>labelMassMergeErrorOnSave</members>
+        <members>labelMassMergeFilterConfidenceFrom</members>
+        <members>labelMassMergeFilterConfidenceTo</members>
+        <members>labelMassMergeHelp</members>
+        <members>labelMassMergeOptional</members>
+        <members>labelMassMergeSaveSuccess</members>
+        <members>labelMassMergeTitle</members>
+        <members>labelMessageLoading</members>
+        <members>labelMessageSaving</members>
         <members>labelShowMore</members>
         <name>CustomLabel</name>
     </types>
