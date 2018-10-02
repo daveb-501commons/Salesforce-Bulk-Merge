@@ -69,20 +69,6 @@ global with sharing class C501_MassMerge_SharedCode {
         return listSO;
     }
    
-    // global utility used to detect whether the Foundation Grant Manager (Foundation Connect) is installed in this instance.
-    private static boolean fCheckedForFGM = false;
-    global static boolean IsFGMInstalled {
-        get {
-            if (!fCheckedForFGM) {
-                Schema.SObjectType token = Schema.getGlobalDescribe().get('FGM_Base__Lead_Program__c');
-                IsFGMInstalled = (token != null);
-                fCheckedForFGM = true;
-            }
-            return IsFGMInstalled;
-        }
-        set;
-    }   
-    
     /******************************************************************************************************
     * @description String helper property for getNamespace() method.
     *******************************************************************************************************/
@@ -103,18 +89,5 @@ global with sharing class C501_MassMerge_SharedCode {
             }
         }
         return plainNamespace;
-    }
-
-    /*******************************************************************************************************
-    * @description Static method that takes a string
-    * If we are in a managed package, tokens in dynamic SOQL must include the package namespace prefix.
-    * If you ever deploy this package as unmanaged, this routine will do nothing!
-    * @param str token name 
-    * @return token name, with namespace prefix, if required.
-    ********************************************************************************************************/
-    global static string StrTokenFGMPrefix(string str) {
-        if (getNamespace() == '') return str;
-        str = getNamespace() + '__' + str;
-        return str;
     }
 }

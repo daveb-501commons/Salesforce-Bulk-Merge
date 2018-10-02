@@ -61,7 +61,7 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
         }
 
         // Required fields
-        listStrFields.add('FGM_Base__Lead_Program__c');
+        listStrFields.add('accountId');
         listStrFields.add('programName');
     }   
     
@@ -87,7 +87,7 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
     global list<SelectOption> listSOServicePrograms {
         get {
             if (listSOServicePrograms == null && accountId != null) {
-                listSOServicePrograms = c501MassMerge_SharedCode.listSOServiceProgramsWithConfidence(accountId, accountFilter.C501_Merge_Confidence_From__c, accountFilter.C501_Merge_Confidence_to__c);
+                listSOServicePrograms = c501MassMerge_SharedCode.listSOServiceProgramsWithConfidence(accountId, accountFilter.C501_Merge_Confidence_From__c, accountFilter.C501_Merge_Confidence_To__c);
             }
             return listSOServicePrograms;
         }
@@ -96,7 +96,7 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
     }
     
     // Confidence to filter the list of accounts
-    global Opportunity accountFilter {
+    global Account accountFilter {
         get {
             if (accountFilter == null) {
                 accountFilter = new Account();
@@ -132,7 +132,7 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
 
         // clear out all state that is specific to the Program
         listSOServicePrograms = null;
-        programName = null;
+        accountFilter.C501_Merge_Program__c = null;
         ChangeAccount();
         return null;
     }
@@ -163,16 +163,16 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
         string strSoql = 
             'select ' + String.join(listStrFields, ',');
 
-        strSoql += ' from Account where C501_Merge_Targets > 0 ';
+        strSoql += ' from Account where C501_Merge_Targets__c > 0 ';
         
-        if (programName != null)
-            strSoql += ' and (programName = :programName or programName = null) ';
+        if (accountFilter.C501_Merge_Program__c != null)
+            strSoql += ' and (C501_Merge_Program__c = :accountFilter.C501_Merge_Program__c or C501_Merge_Program__c = null) ';
 
         if (accountFilter.C501_Merge_Confidence_From__c != null) {
-            strSoql += ' and Merge_Confidence__c >= :accountFilter.C501_Merge_Confidence_From__c ';
+            strSoql += ' and C501_C501_Merge_Confidence__c >= :accountFilter.C501_Merge_Confidence_From__c ';
         }
         if (accountFilter.C501_Merge_Confidence_To__c != null) {
-            strSoql += ' and Merge_Confidence__c <= :accountFilter.C501_Merge_Confidence_To__c ';
+            strSoql += ' and C501_C501_Merge_Confidence__c <= :accountFilter.C501_Merge_Confidence_To__c ';
         }
 
         strSoql += ' order by Account.Name ASC NULLS FIRST';

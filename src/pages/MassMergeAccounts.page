@@ -92,7 +92,7 @@
                         <apex:outputLabel for="ddlAccounts" styleClass="slds-form-element__label" >
                             Household [Optional]
                         </apex:outputLabel>
-                        <apex:selectList id="ddlAccounts" value="{!programName}" required="false" size="1" styleClass="slds-select" disabled="{!listSOAccounts.size=1}">
+                        <apex:selectList id="ddlAccounts" value="{!accountFilter.Id}" required="false" size="1" styleClass="slds-select" disabled="{!listSOAccounts.size=1}">
                             <apex:actionSupport immediate="false" event="onchange" rerender="ddlPrograms,ddlAccounts,tblAccounts" status="retrieveStatus" action="{!ChangeAccount}" />
                             <apex:selectOptions value="{!listSOAccounts}" /> 
                         </apex:selectList>
@@ -101,7 +101,7 @@
                         <apex:outputLabel for="ddlPrograms" styleClass="slds-form-element__label" >
                             Owner [Optional]
                         </apex:outputLabel>
-                        <apex:selectList id="ddlPrograms" value="{!programName}" required="false" size="1" styleClass="slds-select" disabled="{!listSOServicePrograms.size=1}">
+                        <apex:selectList id="ddlPrograms" value="{!accountFilter.C501_Merge_Program__c}" required="false" size="1" styleClass="slds-select" disabled="{!listSOServicePrograms.size=1}">
                             <apex:actionSupport immediate="false" event="onchange" rerender="ddlPrograms,ddlAccounts,tblAccounts" status="retrieveStatus" action="{!ChangeProgram}" />
                             <apex:selectOptions value="{!listSOServicePrograms}" /> 
                         </apex:selectList>
@@ -134,7 +134,7 @@
                             headerClass="slds-text-heading--label slds-theme--shade" style="width:100%" >                 
                 <apex:column styleClass="myTD reference" >
                     <apex:facet name="header">{!$ObjectType.User.Label} Owner *</apex:facet>
-                    <apex:inputField value="{!opp.programName}" styleClass="lookupInput" required="false" >
+                    <apex:inputField value="{!accountFilter.C501_Merge_Program__c}" styleClass="lookupInput" required="false" >
                     </apex:inputField>
                 </apex:column> 
                 <!-- now add optional fields the user can specify -->
