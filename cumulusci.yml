@@ -1,0 +1,7 @@
+project:
+    name: Salesforce-Bulk-Merge
+    package:
+        name:  Salesforce-Bulk-Merge
+        api_version: '42.0'
+
+
