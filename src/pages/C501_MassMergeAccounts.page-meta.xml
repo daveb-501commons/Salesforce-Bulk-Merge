@@ -3,5 +3,5 @@
     <apiVersion>40.0</apiVersion>
     <availableInTouch>false</availableInTouch>
     <confirmationTokenRequired>false</confirmationTokenRequired>
-    <label>MassMergeAccounts</label>
+    <label>C501_MassMergeAccounts</label>
 </ApexPage>

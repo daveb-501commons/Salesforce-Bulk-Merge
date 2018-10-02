@@ -36,12 +36,12 @@ global with sharing class C501_MassMerge_SharedCode {
         listSO.add(new SelectOption('', ''));
 
         for (Account account : [
-            select Name, Id from Account order by Name asc
+            select Name, Id from Account where C501_Merge_Targets__c > 0 order by Name asc
             limit 999]) {
 
                 for (C501_Account_Merge__c mergeAccount : [
                     select Account__c from C501_Account_Merge__c
-                    where Account__c = :account.Id and (Merge_Confidence__c >= :fromMergeConfidence and Merge_Confidence__c <= :toMergeConfidence) 
+                    where Account__c = :account.Id > 0 and (Merge_Confidence__c >= :fromMergeConfidence and Merge_Confidence__c <= :toMergeConfidence) 
                     limit 1]) {
                         listSO.add(new SelectOption(account.Id, account.Name));
                     }

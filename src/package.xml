@@ -14,7 +14,7 @@
         <name>ApexComponent</name>
     </types>
     <types>
-        <members>MassMergeAccounts</members>
+        <members>C501_MassMergeAccounts</members>
         <name>ApexPage</name>
     </types>
     <types>
@@ -74,6 +74,10 @@
     <types>
         <members>Account.MassMergeAccounts</members>
         <name>FieldSet</name>
+    </types>
+    <types>
+        <members>C501_Intake_Programs</members>
+        <name>GlobalValueSet</name>
     </types>
     <types>
         <members>Bootstrap</members>

@@ -130,12 +130,13 @@
         <fullName>C501_Merge_Program__c</fullName>
         <externalId>false</externalId>
         <label>Merge Program</label>
-        <length>64</length>
         <required>false</required>
-        <trackFeedHistory>false</trackFeedHistory>
-        <trackHistory>false</trackHistory>
-        <type>Text</type>
-        <unique>false</unique>
+        <trackTrending>false</trackTrending>
+        <type>Picklist</type>
+        <valueSet>
+            <restricted>true</restricted>
+            <valueSetName>C501_Intake_Programs</valueSetName>
+        </valueSet>
     </fields>
     <fields>
         <fullName>C501_Merge_Targets__c</fullName>
