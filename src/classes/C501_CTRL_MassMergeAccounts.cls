@@ -51,18 +51,14 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
         string id = ApexPages.currentPage().getParameters().get('id');
         if (id != null && id != '') accountId = id;
         
-        id = ApexPages.currentPage().getParameters().get('programName');
-        if (id != null && id != '') programName = id;
-
         // Get list of fields from fieldset
         listStrFields = new List<String>();
         for (Schema.FieldSetMember f : SObjectType.Account.FieldSets.MassMergeAccounts.getFields()) {
             listStrFields.add(f.getFieldPath());
         }
-
+        
         // Required fields
-        listStrFields.add('accountId');
-        listStrFields.add('programName');
+        //listStrFields.add('accountId');
     }   
     
     // holds the currently selected Account in the Account lookup
@@ -72,7 +68,7 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
     global list<SelectOption> listSOAccounts {
         get {
             if (listSOAccounts == null )
-                listSOAccounts = c501MassMerge_SharedCode.listSOAccountsWithConfidence(programName, accountFilter.C501_Merge_Confidence_From__c, accountFilter.C501_Merge_Confidence_To__c);
+                listSOAccounts = c501MassMerge_SharedCode.listSOAccountsWithConfidence(accountFilter.C501_Merge_Program__c, accountFilter.C501_Merge_Confidence_From__c, accountFilter.C501_Merge_Confidence_To__c);
 
             return listSOAccounts;
         }
@@ -80,29 +76,14 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
         set;
         }
     
-    // holds the currently select Owner in the Owner dropdown
-    global ID programName { get; set; }
-    
-    // the list of Owners to put in the dropdown
-    global list<SelectOption> listSOServicePrograms {
-        get {
-            if (listSOServicePrograms == null && accountId != null) {
-                listSOServicePrograms = c501MassMerge_SharedCode.listSOServiceProgramsWithConfidence(accountId, accountFilter.C501_Merge_Confidence_From__c, accountFilter.C501_Merge_Confidence_To__c);
-            }
-            return listSOServicePrograms;
-        }
-        
-        set;
-    }
-    
     // Confidence to filter the list of accounts
     global Account accountFilter {
         get {
             if (accountFilter == null) {
                 accountFilter = new Account();
                 
-                accountFilter.C501_Merge_Confidence_From__c = 1.0;
-                accountFilter.C501_Merge_Confidence_To__c = 0.9;
+                accountFilter.C501_Merge_Confidence_From__c = 90.0;
+                accountFilter.C501_Merge_Confidence_To__c = 100.0;
             }
             return accountFilter;
         }
@@ -121,7 +102,6 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
     global virtual PageReference ChangeMergeConfidence() {
         // clear out all state that is specific to the Date
         listSOAccounts = null;
-        listSOServicePrograms = null;
         listAccounts = null;
         strSaveResults = null;
         return null;
@@ -131,8 +111,6 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
     global virtual PageReference ChangeProgram() {
 
         // clear out all state that is specific to the Program
-        listSOServicePrograms = null;
-        accountFilter.C501_Merge_Program__c = null;
         ChangeAccount();
         return null;
     }
@@ -156,7 +134,7 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
     global virtual void FillListAccounts() {
 
         // if they haven't yet picked a program
-        if (accountId == null) return;           
+        //if (accountId == null) return;           
         
         // find the existing owners
         // we need to use dynamic soql to pick up all custom fields we don't know about
@@ -165,7 +143,7 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
 
         strSoql += ' from Account where C501_Merge_Targets__c > 0 ';
         
-        if (accountFilter.C501_Merge_Program__c != null)
+/*        if (accountFilter.C501_Merge_Program__c != null)
             strSoql += ' and (C501_Merge_Program__c = :accountFilter.C501_Merge_Program__c or C501_Merge_Program__c = null) ';
 
         if (accountFilter.C501_Merge_Confidence_From__c != null) {
@@ -174,7 +152,7 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
         if (accountFilter.C501_Merge_Confidence_To__c != null) {
             strSoql += ' and C501_C501_Merge_Confidence__c <= :accountFilter.C501_Merge_Confidence_To__c ';
         }
-
+*/
         strSoql += ' order by Account.Name ASC NULLS FIRST';
         
         listAccounts = Database.Query(strSoql);
@@ -264,10 +242,7 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
     // user wants to close this page
     global virtual PageReference Cancel() {
         // figure out which object to return to.
-        if (programName != null)
-            idRedirect = programName;
-        else
-            idRedirect = accountId;
+        idRedirect = accountId;
         
         // trigger our redirect component to redirect using javascript.
         redirect = true;

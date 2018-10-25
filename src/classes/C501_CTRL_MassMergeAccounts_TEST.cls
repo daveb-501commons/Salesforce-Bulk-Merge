@@ -53,25 +53,20 @@ private with sharing class C501_CTRL_MassMergeAccounts_TEST {
         //point to our VF page
         PageReference p = new PageReference('Page.MassMergeAccounts');
         p.getParameters().put('Id', acc.id);
-        p.getParameters().put('programName', 'Program');
         Test.setCurrentPageReference(p);
         
         //instantiate the controller for this opp
         C501_CTRL_MassMergeAccounts ctrl = new C501_CTRL_MassMergeAccounts();
         System.AssertEquals(acc.Id, ctrl.accountId);
-        System.AssertEquals('Program', ctrl.programName);
         System.Assert(ctrl.listSOAccounts.size() > 1);
-        System.AssertEquals(2, ctrl.listSOServicePrograms.size());
         System.AssertEquals(cAccounts, ctrl.listAccounts.size());
         
         ctrl.accountId = null;
         ctrl.ChangeProgram();
-        System.AssertEquals(null, ctrl.programName);
         System.AssertEquals(null, ctrl.listAccounts);
         
         ctrl.accountId = acc.Id;
         ctrl.ChangeProgram();
-        //ctrl.programName = user.Id;
         ctrl.ChangeProgram();
         System.AssertEquals(cAccounts, ctrl.listAccounts.size());
         System.AssertEquals(0, ctrl.numberOfRecordsDirty);

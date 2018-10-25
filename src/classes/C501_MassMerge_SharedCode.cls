@@ -41,7 +41,7 @@ global with sharing class C501_MassMerge_SharedCode {
 
                 for (C501_Account_Merge__c mergeAccount : [
                     select Account__c from C501_Account_Merge__c
-                    where Account__c = :account.Id > 0 and (Merge_Confidence__c >= :fromMergeConfidence and Merge_Confidence__c <= :toMergeConfidence) 
+                    where Account__c = :account.Id and (Merge_Confidence__c >= :fromMergeConfidence and Merge_Confidence__c <= :toMergeConfidence) 
                     limit 1]) {
                         listSO.add(new SelectOption(account.Id, account.Name));
                     }
@@ -50,25 +50,6 @@ global with sharing class C501_MassMerge_SharedCode {
         return listSO;
     }
 
-    // the list of Programs for the specified Accounts
-    global list<SelectOption> listSOServiceProgramsWithConfidence(ID accountId, Decimal fromMergeConfidence, Decimal toMergeConfidence) {
-        list<SelectOption> listSO = new list<SelectOption>();
-        listSO.add(new SelectOption('', ''));
-
-        for (C501_Service_Household__c serviceHousehold : [
-            select C501_Household__c, C501_Program__c from C501_Service_Household__c order by C501_Program__c asc
-            limit 999]) {
-
-                for (C501_Account_Merge__c mergeAccount : [
-                    select Account__c from C501_Account_Merge__c
-                    where Account__c = :serviceHousehold.C501_Household__c and (Merge_Confidence__c >= :fromMergeConfidence and Merge_Confidence__c <= :toMergeConfidence) 
-                    limit 1]) {
-                        listSO.add(new SelectOption(serviceHousehold.C501_Household__c, serviceHousehold.C501_Program__c));
-                    }
-        }       
-        return listSO;
-    }
-   
     /******************************************************************************************************
     * @description String helper property for getNamespace() method.
     *******************************************************************************************************/

@@ -173,7 +173,7 @@
         <language>en_US</language>
         <protected>false</protected>
         <shortDescription>label for the merge confidence filter From field.</shortDescription>
-        <value>Merge Confidence From</value>
+        <value>Merge Confidence From %</value>
     </labels>
     <labels>
         <fullName>labelMassMergeFilterConfidenceTo</fullName>
@@ -181,7 +181,7 @@
         <language>en_US</language>
         <protected>false</protected>
         <shortDescription>label for the merge confidence filter section To field.</shortDescription>
-        <value>To</value>
+        <value>To %</value>
     </labels>
     <labels>
         <fullName>labelMassMergeHelp</fullName>
@@ -189,7 +189,7 @@
         <language>en_US</language>
         <protected>false</protected>
         <shortDescription>help text for the Mass Merge Accounts page</shortDescription>
-        <value>Choose the Program and optionally an Owner then the page will display any existing Request records.  Click Add new record to create new requests.  Update all rows as appropriate, and then click Save.  Requests with Pipeline equals Closed or Withdrawn are not included.</value>
+        <value>Choose the Household and Program then the page will display any existing account merge records.  Update all rows as appropriate, and then click Save.</value>
     </labels>
     <labels>
         <fullName>labelMassMergeOptional</fullName>
