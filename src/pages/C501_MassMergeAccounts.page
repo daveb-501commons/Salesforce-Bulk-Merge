@@ -131,18 +131,20 @@
             <apex:dataTable value="{!listAccounts}" var="opp" id="tblAccounts" 
                             styleClass="slds-table slds-table--compact slds-table--bordered"
                             headerClass="slds-text-heading--label slds-theme--shade" style="width:100%" >                 
-                <apex:column style="width:50px" styleClass="myTD reference" >
-                    <apex:facet name="header">Program *</apex:facet>
-                    <apex:inputField value="{!accountFilter.C501_Merge_Program__c}" styleClass="lookupInput" required="false" >
+                            
+                <apex:column styleClass="myTD reference" >
+                    <apex:facet name="header">Action</apex:facet>
+                    <apex:inputField value="{!accountFilter.C501_Merge_Action__c}" styleClass="picklist" required="false" >
                     </apex:inputField>
                 </apex:column> 
-                <!-- now add optional fields the user can specify -->
+
+                <!-- Add FieldSet Fields -->
                 <apex:repeat value="{!$ObjectType.Account.FieldSets.MassMergeAccounts}" var="f" >
                     <apex:column style="width:50px" styleClass="myTD {!f.Type} {!IF($ObjectType['Account'].fields[f].dependentPicklist,
                                                 IF(f.Type == 'picklist', 'dependentPicklistFixup', 'dependentMultiPicklistFixup'),'')}" >
                         <apex:facet name="header">{!f.Label + IF(f.DBRequired, ' *', '')}</apex:facet>
 
-                        <apex:inputField value="{!opp[f]}" 
+                        <apex:outputField value="{!opp[f]}" 
                                     styleClass="{!CASE(f.Type, 
                                                     'reference', 'lookupInput', 
                                                     'picklist', 'slds-select',
