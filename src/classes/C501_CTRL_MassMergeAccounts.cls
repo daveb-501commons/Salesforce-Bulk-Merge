@@ -49,21 +49,18 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
         
         // handle optional parameters (must use string, not ID, to handle null)
         string id = ApexPages.currentPage().getParameters().get('id');
-        if (id != null && id != '') accountId = id;
+        if (id != null && id != '') accountFilter.Id = id;
         
         // Get list of fields from fieldset
         listStrFields = new List<String>();
         for (Schema.FieldSetMember f : SObjectType.Account.FieldSets.MassMergeAccounts.getFields()) {
             listStrFields.add(f.getFieldPath());
         }
-        
+
         // Required fields
-        //listStrFields.add('accountId');
+        //listStrFields.add('accountFilter.Id');
     }   
     
-    // holds the currently selected Account in the Account lookup
-    global ID accountId { get; set; }
-
     // the list of Programs to put in the Program dropdown
     global list<SelectOption> listSOAccounts {
         get {
@@ -133,15 +130,23 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
     // helper function that the client can override, to query for the appropriate fields in Accounts.
     global virtual void FillListAccounts() {
 
-        // if they haven't yet picked a program
-        //if (accountId == null) return;           
+        // if they haven't yet picked an account
+        if (accountFilter.Id == null) return;           
         
-        // find the existing owners
-        // we need to use dynamic soql to pick up all custom fields we don't know about
+		Map<Id,Decimal> accountsMerge = new Map<Id,Decimal>();
+        accountsMerge.put(accountFilter.Id, 100.0);
+		for(C501_Account_Merge__c accountMerge : [
+			SELECT Merge_Target_Account__c, Merge_Confidence__c
+			FROM C501_Account_Merge__c
+			WHERE Account__c = :accountFilter.Id AND isDeleted = false]) {
+        		accountsMerge.put(accountMerge.Merge_Target_Account__c, accountMerge.Merge_Confidence__c);
+		}
+
         string strSoql = 
             'select ' + String.join(listStrFields, ',');
 
-        strSoql += ' from Account where C501_Merge_Targets__c > 0 ';
+        Set<Id> accountsMergeIds = accountsMerge.keySet();
+        strSoql += ' from Account where Id in :accountsMergeIds';
         
 /*        if (accountFilter.C501_Merge_Program__c != null)
             strSoql += ' and (C501_Merge_Program__c = :accountFilter.C501_Merge_Program__c or C501_Merge_Program__c = null) ';
@@ -156,6 +161,12 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
         strSoql += ' order by Account.Name ASC NULLS FIRST';
         
         listAccounts = Database.Query(strSoql);
+
+        for ( Account account :listAccounts ) {
+            if (accountsMerge.containsKey(account.Id)) {
+                account.C501_Merge_Confidence__c = accountsMerge.get(account.Id);
+            }
+        }
     }
     
     global Boolean fHasListAccounts {
@@ -242,7 +253,7 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
     // user wants to close this page
     global virtual PageReference Cancel() {
         // figure out which object to return to.
-        idRedirect = accountId;
+        idRedirect = accountFilter.Id;
         
         // trigger our redirect component to redirect using javascript.
         redirect = true;

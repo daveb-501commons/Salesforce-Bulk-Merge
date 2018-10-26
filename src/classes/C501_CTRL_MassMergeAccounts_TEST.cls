@@ -57,15 +57,15 @@ private with sharing class C501_CTRL_MassMergeAccounts_TEST {
         
         //instantiate the controller for this opp
         C501_CTRL_MassMergeAccounts ctrl = new C501_CTRL_MassMergeAccounts();
-        System.AssertEquals(acc.Id, ctrl.accountId);
+        System.AssertEquals(acc.Id, ctrl.accountFilter.Id);
         System.Assert(ctrl.listSOAccounts.size() > 1);
         System.AssertEquals(cAccounts, ctrl.listAccounts.size());
         
-        ctrl.accountId = null;
+        ctrl.accountFilter.Id = null;
         ctrl.ChangeProgram();
         System.AssertEquals(null, ctrl.listAccounts);
         
-        ctrl.accountId = acc.Id;
+        ctrl.accountFilter.Id = acc.Id;
         ctrl.ChangeProgram();
         ctrl.ChangeProgram();
         System.AssertEquals(cAccounts, ctrl.listAccounts.size());
