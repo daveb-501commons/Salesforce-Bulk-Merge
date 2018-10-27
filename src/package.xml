@@ -3,10 +3,10 @@
     <types>
         <members>C501_CTRL_MassMergeAccounts</members>
         <members>C501_CTRL_MassMergeAccounts_TEST</members>
-        <members>C501_MassMerge_SharedCode</members>
-        <members>C501_MassMerge_SharedCode_TEST</members>
         <members>C501_MassMerge_Scheduler</members>
         <members>C501_MassMerge_Scheduler_TEST</members>
+        <members>C501_MassMerge_SharedCode</members>
+        <members>C501_MassMerge_SharedCode_TEST</members>
         <members>C501_UTIL_PageMessages_CTRL</members>
         <name>ApexClass</name>
     </types>
@@ -26,10 +26,10 @@
         <members>Account.C501_Merge_Confidence__c</members>
         <members>Account.C501_Merge_Program__c</members>
         <members>Account.C501_Merge_Targets__c</members>
-        <members>C501_Account_Merge__c.Unique_Id__c</members>
         <members>C501_Account_Merge__c.Account__c</members>
         <members>C501_Account_Merge__c.Merge_Confidence__c</members>
         <members>C501_Account_Merge__c.Merge_Target_Account__c</members>
+        <members>C501_Account_Merge__c.Unique_Id__c</members>
         <name>CustomField</name>
     </types>
     <types>
