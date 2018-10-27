@@ -44,6 +44,8 @@ global class C501_MassMerge_Scheduler implements Schedulable {
         //
 		if (!mergeAccounts.isEmpty()) {
 			Database.SaveResult[] insertResults = Database.insert(mergeAccounts.values(), false);
+
+            // TBD - Look for anything other than Duplicate Id Error on Unique_Id__c which is expected
 		}
    }
 }
