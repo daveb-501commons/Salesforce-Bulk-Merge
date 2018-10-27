@@ -32,7 +32,7 @@ global class C501_MassMerge_Scheduler implements Schedulable {
             minId = result.get('expr2').toString();
             uniqueId = String.valueOf(maxId) + String.valueOf(maxId);
             mergeAccounts.put(uniqueId, new C501_Account_Merge__c(
-                //Unique_Id__c = uniqueId,
+                Unique_Id__c = uniqueId,
                 Merge_Confidence__c = 100.0,
                 Account__c = minId,
                 Merge_Target_Account__c = maxId
@@ -43,7 +43,7 @@ global class C501_MassMerge_Scheduler implements Schedulable {
 		// Perform all DML (Data Manipulation Language) calls (insert, update, merge, delete, restore) outside of loop to avoid Salesforce Governor Limits: https://developer.salesforce.com/docs/atlas.en-us.apexcode.meta/apexcode/apex_gov_limits.htm
         //
 		if (!mergeAccounts.isEmpty()) {
-			insert mergeAccounts.values();
+			Database.SaveResult[] insertResults = Database.insert(mergeAccounts.values(), false);
 		}
    }
 }
