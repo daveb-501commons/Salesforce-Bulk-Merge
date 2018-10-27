@@ -1,6 +1,6 @@
 //
 // Run Code from Developer Console
-//  1) Debug -> Open Asych Window
+//  1) Debug -> Open Execute Anonymous Window
 //  2) paste code
 //      C501_MassMerge_Scheduler schedule = new C501_MassMerge_Scheduler();
 //      schedule.execute(null);
