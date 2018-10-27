@@ -5,6 +5,8 @@
         <members>C501_CTRL_MassMergeAccounts_TEST</members>
         <members>C501_MassMerge_SharedCode</members>
         <members>C501_MassMerge_SharedCode_TEST</members>
+        <members>C501_MassMerge_Scheduler</members>
+        <members>C501_MassMerge_Scheduler_TEST</members>
         <members>C501_UTIL_PageMessages_CTRL</members>
         <name>ApexClass</name>
     </types>
