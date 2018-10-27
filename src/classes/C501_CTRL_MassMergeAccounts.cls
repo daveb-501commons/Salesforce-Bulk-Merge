@@ -58,7 +58,8 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
         }
 
         // Required fields
-        //listStrFields.add('accountFilter.Id');
+        listStrFields.add('Id');
+        listStrFields.add('C501_Merge_Action__c');
     }   
     
     global list<SelectOption> listSOAccounts {
@@ -247,24 +248,103 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
         strSaveResults = null;
         
         try {
+            // Step 1: Update accounts with Merge Action
             list<Account> listAccountsUpdate = new list<Account>();
-
+            list<Account> listAccountsMerge = new list<Account>();
             for (Account account : listAccounts) {
-                if (account.Id != null) {
+
+                system.debug('C501_CTRL_MassMergeAccounts::SaveAccounts Update Merge Action - account.Id: ' + account.Id 
+                    + ' account.C501_Merge_Action__c: ' + account.C501_Merge_Action__c);
+
+                if (account.Id != null && (account.C501_Merge_Action__c != '--None--' || String.isBlank(account.C501_Merge_Action__c))) {
+
                     // we couldn't reliably mark dirty records in all scenarios,
                     // so we've decided it is better to always update all records.
                     //if (setAccountsIdDirty.contains(account.Id)) 
                     listAccountsUpdate.add(account);
                 }
+                
+                if (account.Id != null && account.C501_Merge_Action__c == 'Merge') {
+
+                    // we couldn't reliably mark dirty records in all scenarios,
+                    // so we've decided it is better to always update all records.
+                    //if (setAccountsIdDirty.contains(account.Id)) 
+                    listAccountsMerge.add(account);
+                }
             }
             
-            update listAccountsUpdate;
+            if (!listAccountsUpdate.isEmpty()) {
+                update listAccountsUpdate;
+            }
+
+            // Get related Service Households
+            Map<Id, List<Id>> serviceHouseholds = new Map<Id, List<Id>>();
+            for(C501_Service_Household__c serviceHousehold : [
+                SELECT Id, C501_Household__c
+                FROM C501_Service_Household__c
+                WHERE C501_Household__c in :listAccountsMerge]) {
+                    if (serviceHouseholds.containsKey(serviceHousehold.C501_Household__c)) {
+                        List<Id> services = serviceHouseholds.remove(serviceHousehold.C501_Household__c);
+                        services.add(serviceHousehold.Id);
+                        serviceHouseholds.put(serviceHousehold.C501_Household__c, services);
+                    }
+                    else {
+                        serviceHouseholds.put(serviceHousehold.C501_Household__c, new List<Id> {serviceHousehold.Id});
+                    }
+            }
+
+            // Step 2: Check to Merge accounts
+            list<C501_Service_Household__c> listServiceHouseholdsUpdate = new list<C501_Service_Household__c>();
+            list<Account> listAccountsDelete = new list<Account>();
+            if (listAccountsMerge.size() >= 2) {
+                Account masterAccount = listAccountsMerge.remove(1);
+                for (Account account : listAccountsMerge) {
+
+                    system.debug('C501_CTRL_MassMergeAccounts::SaveAccounts Merge Accounts - account.Id: ' + account.Id 
+                        + ' account.C501_Merge_Action__c: ' + account.C501_Merge_Action__c);
+
+                    // Reassign Service Households
+                    if (serviceHouseholds.containsKey(account.Id)) {
+                        List<Id> services = serviceHouseholds.remove(account.Id);
+                        for (Id serviceId : services) {
+                            listServiceHouseholdsUpdate.add(new C501_Service_Household__c(
+                                Id = serviceId,
+                                C501_Household__c = masterAccount.Id
+                            ));
+                        }
+                    }
+
+                    // Reassign Contacts
+                    // TBD - Merge contacts and seperate household for each contact not merge
+
+                    // Reassign Account Merges
+                    // TBD - except the one related to master account
+
+                    // Reassign Addresses
+                    // TBD - make sure not creating duplicates
+
+                    // Reassign Client Visits (Intake)
+                    // TBD
+
+                    // Delete Account
+                    listAccountsDelete.add(account);
+                }
+            }
+
+            if (!listServiceHouseholdsUpdate.isEmpty()) {
+                update listServiceHouseholdsUpdate;
+            }
+
+            if (!listAccountsDelete.isEmpty()) {
+                //delete listAccountsDelete;
+            }
            
             strSaveResults = listAccountsUpdate.size() + ' ' + Label.labelMassMergeSaveSuccess;
             ApexPages.addMessage(new ApexPages.message(ApexPages.Severity.CONFIRM, strSaveResults));
 
             // successful save, so clear out dirty list
             setAccountsIdDirty = null;
+
             return null;            
 
         } catch (Exception e) {

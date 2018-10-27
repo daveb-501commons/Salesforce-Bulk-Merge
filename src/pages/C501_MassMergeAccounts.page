@@ -135,7 +135,7 @@
                             
                 <apex:column styleClass="myTD reference" >
                     <apex:facet name="header">Action</apex:facet>
-                    <apex:inputField value="{!accountFilter.C501_Merge_Action__c}" styleClass="picklist" required="false" >
+                    <apex:inputField value="{!account.C501_Merge_Action__c}" styleClass="picklist" required="false" >
                     </apex:inputField>
                 </apex:column> 
 
