@@ -61,18 +61,47 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
         //listStrFields.add('accountFilter.Id');
     }   
     
-    // the list of Programs to put in the Program dropdown
     global list<SelectOption> listSOAccounts {
         get {
             if (listSOAccounts == null )
-                listSOAccounts = c501MassMerge_SharedCode.listSOAccountsWithConfidence(accountFilter.C501_Merge_Program__c, accountFilter.C501_Merge_Confidence_From__c, accountFilter.C501_Merge_Confidence_To__c);
+                listSOAccounts = c501MassMerge_SharedCode.listSOAccountsWithConfidence(serviceHouseholdFilter.C501_Program__c, accountFilter.C501_Merge_Confidence_From__c, accountFilter.C501_Merge_Confidence_To__c);
 
             return listSOAccounts;
         }
 
         set;
         }
-    
+
+    global list<SelectOption> listSOPrograms {
+        get {
+            if (listSOPrograms == null ) {
+                Schema.DescribeFieldResult fieldResult = C501_Service_Household__c.C501_Program__c.getDescribe();
+                List<Schema.PicklistEntry> picklistValues = fieldResult.getPicklistValues();
+
+                listSOPrograms = new List<System.SelectOption>();
+                listSOPrograms.add(new SelectOption('', ''));
+
+                for (Schema.PicklistEntry picklistValue :picklistValues) {
+                    listSOPrograms.add(new SelectOption(picklistValue.getLabel(), picklistValue.getValue()));
+                }
+            }
+
+            return listSOPrograms;
+        }
+
+        set;
+        }
+
+    global C501_Service_Household__c serviceHouseholdFilter {
+        get {
+            if (serviceHouseholdFilter == null) {
+                serviceHouseholdFilter = new C501_Service_Household__c();
+            }
+            return serviceHouseholdFilter;
+        }
+        set;
+    }
+
     // Confidence to filter the list of accounts
     global Account accountFilter {
         get {
@@ -89,26 +118,32 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
 
     // the user has changed the Account dropdown
     global virtual PageReference ChangeAccount() {
-        // clear out all state that is specific to the Owner
-        listAccounts = null;
-        strSaveResults = null;
-        return null;
-    }
 
-    // the user has changed the Confidence query
-    global virtual PageReference ChangeMergeConfidence() {
-        // clear out all state that is specific to the Date
-        listSOAccounts = null;
         listAccounts = null;
         strSaveResults = null;
+
         return null;
     }
 
     // the user has changed the Program dropdown
     global virtual PageReference ChangeProgram() {
 
-        // clear out all state that is specific to the Program
-        ChangeAccount();
+        listSOAccounts = null;
+        accountFilter.Id = null;
+        listAccounts = null;
+        strSaveResults = null;
+
+        return null;
+    }
+
+    // the user has changed the Confidence query
+    global virtual PageReference ChangeMergeConfidence() {
+
+        listSOAccounts = null;
+        accountFilter.Id = null;
+        listAccounts = null;
+        strSaveResults = null;
+
         return null;
     }
 
@@ -214,12 +249,12 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
         try {
             list<Account> listAccountsUpdate = new list<Account>();
 
-            for (Account opp : listAccounts) {
-                if (opp.Id != null) {
+            for (Account account : listAccounts) {
+                if (account.Id != null) {
                     // we couldn't reliably mark dirty records in all scenarios,
                     // so we've decided it is better to always update all records.
-                    //if (setAccountsIdDirty.contains(opp.Id)) 
-                    listAccountsUpdate.add(opp);
+                    //if (setAccountsIdDirty.contains(account.Id)) 
+                    listAccountsUpdate.add(account);
                 }
             }
             

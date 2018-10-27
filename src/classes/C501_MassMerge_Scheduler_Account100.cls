@@ -2,12 +2,12 @@
 // Run Code from Developer Console
 //  1) Debug -> Open Execute Anonymous Window
 //  2) paste code
-//      C501_MassMerge_Scheduler schedule = new C501_MassMerge_Scheduler();
+//      C501_MassMerge_Scheduler_Account100 schedule = new C501_MassMerge_Scheduler_Account100();
 //      schedule.execute(null);
 //  3) click Execute
 //
 
-global class C501_MassMerge_Scheduler implements Schedulable {
+global class C501_MassMerge_Scheduler_Account100 implements Schedulable {
 
     global void execute(SchedulableContext SC) {
 

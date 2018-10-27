@@ -93,17 +93,18 @@
                             Household [Required]
                         </apex:outputLabel>
                         <apex:selectList id="ddlAccounts" value="{!accountFilter.Id}" required="false" size="1" styleClass="slds-select" disabled="{!listSOAccounts.size=1}">
-                            <apex:actionSupport immediate="false" event="onchange" rerender="ddlAccounts,tblAccounts" status="retrieveStatus" action="{!ChangeAccount}" />
+                            <apex:actionSupport immediate="false" event="onchange" rerender="ddlAccounts,ddlPrograms,tblAccounts" status="retrieveStatus" action="{!ChangeAccount}" />
                             <apex:selectOptions value="{!listSOAccounts}" /> 
                         </apex:selectList>
                     </div>
                     <div class="slds-col--padded slds-form-element slds-size--1-of-3">
-                        <apex:outputLabel for="fldProgram" styleClass="slds-form-element__label" >
-                            Program [Required]
+                        <apex:outputLabel for="ddlPrograms" styleClass="slds-form-element__label" >
+                            Program
                         </apex:outputLabel>
-                        <apex:inputField id="fldProgram" value="{!accountFilter.C501_Merge_Program__c}" required="false" label="" styleClass="slds-input">
-                            <apex:actionSupport immediate="false" event="onchange" rerender="ddlAccounts,tblAccounts" status="retrieveStatus" action="{!ChangeMergeConfidence}" />
-                        </apex:inputField>
+                        <apex:selectList id="ddlPrograms" value="{!serviceHouseholdFilter.C501_Program__c}" required="false" size="1" styleClass="slds-select" disabled="{!listSOPrograms.size=1}">
+                            <apex:actionSupport immediate="false" event="onchange" rerender="ddlAccounts,ddlPrograms,tblAccounts" status="retrieveStatus" action="{!ChangeProgram}" />
+                            <apex:selectOptions value="{!listSOPrograms}" /> 
+                        </apex:selectList>
                     </div>
                 </div>
             </fieldset>
@@ -114,7 +115,7 @@
                             {!$Label.labelMassMergeFilterConfidenceFrom}
                         </apex:outputLabel>
                         <apex:inputField id="fldConfidenceFrom" required="false" value="{!accountFilter.C501_Merge_Confidence_From__c}" label="" styleClass="slds-input" >
-                            <apex:actionSupport immediate="false" event="onchange" rerender="ddlAccounts,tblAccounts" status="retrieveStatus" action="{!ChangeMergeConfidence}" />
+                            <apex:actionSupport immediate="false" event="onchange" rerender="ddlAccounts,ddlPrograms,tblAccounts" status="retrieveStatus" action="{!ChangeMergeConfidence}" />
                         </apex:inputField>
                     </div>
                     <div class="slds-col--padded slds-size--1-of-3 slds-form-element">
@@ -122,13 +123,13 @@
                             {!$Label.labelMassMergeFilterConfidenceTo}
                         </apex:outputLabel>
                         <apex:inputField id="fldConfidenceTo" required="false" value="{!accountFilter.C501_Merge_Confidence_To__c}" label="" styleClass="slds-input" >
-                            <apex:actionSupport immediate="false" event="onchange" rerender="ddlAccounts,tblAccounts" status="retrieveStatus" action="{!ChangeMergeConfidence}" />
+                            <apex:actionSupport immediate="false" event="onchange" rerender="ddlAccounts,ddlPrograms,tblAccounts" status="retrieveStatus" action="{!ChangeMergeConfidence}" />
                         </apex:inputField>
                     </div>
                     <div class="slds-col--padded slds-size--1-of-3"/>
                 </div> 
             </fieldset>   
-            <apex:dataTable value="{!listAccounts}" var="opp" id="tblAccounts" 
+            <apex:dataTable value="{!listAccounts}" var="account" id="tblAccounts" 
                             styleClass="slds-table slds-table--compact slds-table--bordered"
                             headerClass="slds-text-heading--label slds-theme--shade" style="width:100%" >                 
                             
@@ -138,15 +139,20 @@
                     </apex:inputField>
                 </apex:column> 
 
+                <apex:column styleClass="myTD reference" >
+                    <apex:facet name="header">Id</apex:facet>
+                    <apex:outputLink value="/{!account.Id}">{!account.Id}</apex:outputLink>
+                </apex:column> 
+
                 <!-- Add FieldSet Fields -->
                 <apex:repeat value="{!$ObjectType.Account.FieldSets.MassMergeAccounts}" var="f" >
                     <apex:column style="width:50px" styleClass="myTD {!f.Type} {!IF($ObjectType['Account'].fields[f].dependentPicklist,
                                                 IF(f.Type == 'picklist', 'dependentPicklistFixup', 'dependentMultiPicklistFixup'),'')}" >
                         <apex:facet name="header">{!f.Label + IF(f.DBRequired, ' *', '')}</apex:facet>
 
-                        <apex:outputField value="{!opp[f]}" 
+                        <apex:outputField value="{!account[f]}" 
                                     styleClass="{!CASE(f.Type, 
-                                                    'reference', 'lookupInput', 
+                                                    'reference', 'lookupOutput', 
                                                     'picklist', 'slds-select',
                                                     'multipicklist', 'slds-select multipicklistSLDSFixup',
                                                     'boolean', 'slds-checkbox',

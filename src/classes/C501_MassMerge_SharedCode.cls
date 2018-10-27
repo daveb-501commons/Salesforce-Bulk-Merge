@@ -32,6 +32,11 @@ global with sharing class C501_MassMerge_SharedCode {
 
     // the list of Accounts
     global list<SelectOption> listSOAccountsWithConfidence(String programName, Decimal fromMergeConfidence, Decimal toMergeConfidence) {
+
+        system.debug('C501_MassMerge_SharedCode::listSOAccountsWithConfidence - programName: ' + programName 
+            + ' fromMergeConfidence: ' + fromMergeConfidence.toPlainString()
+            + ' toMergeConfidence: ' + toMergeConfidence.toPlainString());
+
         list<SelectOption> listSO = new list<SelectOption>();
         listSO.add(new SelectOption('', ''));
 
@@ -43,7 +48,17 @@ global with sharing class C501_MassMerge_SharedCode {
                     select Account__c from C501_Account_Merge__c
                     where Account__c = :account.Id and (Merge_Confidence__c >= :fromMergeConfidence and Merge_Confidence__c <= :toMergeConfidence) 
                     limit 1]) {
-                        listSO.add(new SelectOption(account.Id, account.Name));
+                        if (String.isBlank(programName)) {
+                            listSO.add(new SelectOption(account.Id, account.Name));
+                        }
+                        else {
+                            for (C501_Service_Household__c serviceHousehold : [
+                                select C501_Household__c from C501_Service_Household__c
+                                where C501_Household__c = :account.Id and C501_Program__c = :programName
+                                limit 1]) {
+                                    listSO.add(new SelectOption(account.Id, account.Name));
+                                }
+                        }
                     }
             }
 
