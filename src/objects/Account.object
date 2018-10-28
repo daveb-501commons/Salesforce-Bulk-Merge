@@ -30,19 +30,7 @@
         <type>Picklist</type>
         <valueSet>
             <restricted>true</restricted>
-            <valueSetDefinition>
-                <sorted>false</sorted>
-                <value>
-                    <fullName>Merge</fullName>
-                    <default>false</default>
-                    <label>Merge</label>
-                </value>
-                <value>
-                    <fullName>Ignore</fullName>
-                    <default>false</default>
-                    <label>Ignore</label>
-                </value>
-            </valueSetDefinition>
+            <valueSetName>C501_Merge_Actions</valueSetName>
         </valueSet>
     </fields>
     <fields>

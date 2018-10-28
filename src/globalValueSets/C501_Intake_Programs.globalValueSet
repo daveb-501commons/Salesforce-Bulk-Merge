@@ -20,6 +20,6 @@
         <default>false</default>
         <label>Housing Pool</label>
     </customValue>
-    <masterLabel>Program</masterLabel>
+    <masterLabel>C501 Intake Programs</masterLabel>
     <sorted>false</sorted>
 </GlobalValueSet>
