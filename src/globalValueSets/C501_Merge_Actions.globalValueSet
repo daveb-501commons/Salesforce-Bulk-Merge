@@ -10,11 +10,6 @@
         <default>false</default>
         <label>Ignore</label>
     </customValue>
-    <customValue>
-        <fullName>Unassigned</fullName>
-        <default>false</default>
-        <label>Unassigned</label>
-    </customValue>
     <masterLabel>C501 Merge Actions</masterLabel>
     <sorted>false</sorted>
 </GlobalValueSet>

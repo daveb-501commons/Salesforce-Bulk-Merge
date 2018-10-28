@@ -249,21 +249,13 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
         
         try {
             // Step 1: Update accounts with Merge Action
-            list<Account> listAccountsUpdate = new list<Account>();
             list<Account> listAccountsMerge = new list<Account>();
+            list<C501_Account_Merge__c> listAccountsMergeIgnore = new list<C501_Account_Merge__c>();
             for (Account account : listAccounts) {
 
                 system.debug('C501_CTRL_MassMergeAccounts::SaveAccounts Update Merge Action - account.Id: ' + account.Id 
                     + ' account.C501_Merge_Action__c: ' + account.C501_Merge_Action__c);
 
-                if (account.Id != null && (account.C501_Merge_Action__c != '--None--' || String.isBlank(account.C501_Merge_Action__c))) {
-
-                    // we couldn't reliably mark dirty records in all scenarios,
-                    // so we've decided it is better to always update all records.
-                    //if (setAccountsIdDirty.contains(account.Id)) 
-                    listAccountsUpdate.add(account);
-                }
-                
                 if (account.Id != null && account.C501_Merge_Action__c == 'Merge') {
 
                     // we couldn't reliably mark dirty records in all scenarios,
@@ -271,13 +263,17 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
                     //if (setAccountsIdDirty.contains(account.Id)) 
                     listAccountsMerge.add(account);
                 }
+
+                if (account.Id != null && account.C501_Merge_Action__c == 'Ignore') {
+
+                    // we couldn't reliably mark dirty records in all scenarios,
+                    // so we've decided it is better to always update all records.
+                    //if (setAccountsIdDirty.contains(account.Id)) 
+                    listAccountsMergeIgnore.add(account);
+                }
             }
             
-            if (!listAccountsUpdate.isEmpty()) {
-                update listAccountsUpdate;
-            }
-
-            // Get related Service Households
+            // Get related Service Households per Account
             Map<Id, List<Id>> serviceHouseholds = new Map<Id, List<Id>>();
             for(C501_Service_Household__c serviceHousehold : [
                 SELECT Id, C501_Household__c
