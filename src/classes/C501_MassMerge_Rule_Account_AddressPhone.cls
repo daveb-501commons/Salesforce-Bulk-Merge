@@ -2,12 +2,12 @@
 // Run Code from Developer Console
 //  1) Debug -> Open Execute Anonymous Window
 //  2) paste code
-//      C501_MassMerge_Scheduler_Account100 schedule = new C501_MassMerge_Scheduler_Account100();
+//      C501_MassMerge_Rule_Account_AddressPhone schedule = new C501_MassMerge_Rule_Account_AddressPhone();
 //      schedule.execute(null);
 //  3) click Execute
 //
 
-global class C501_MassMerge_Scheduler_Account100 implements Schedulable {
+global class C501_MassMerge_Rule_Account_AddressPhone implements Schedulable {
 
     global void execute(SchedulableContext SC) {
 
@@ -46,7 +46,8 @@ global class C501_MassMerge_Scheduler_Account100 implements Schedulable {
                 Unique_Id__c = uniqueId,
                 Merge_Confidence__c = 100.0,
                 Account__c = minId,
-                Merge_Target_Account__c = maxId
+                Merge_Target_Account__c = maxId,
+                Merge_Metric__c = mergeMetric[0].Id
             ));
         }
 
