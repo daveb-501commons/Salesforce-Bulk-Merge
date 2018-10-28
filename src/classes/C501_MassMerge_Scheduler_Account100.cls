@@ -14,6 +14,17 @@ global class C501_MassMerge_Scheduler_Account100 implements Schedulable {
 		//
 		// Perform all SOQL Queries outside of loop to avoid Salesforce Governor Limits: https://developer.salesforce.com/docs/atlas.en-us.apexcode.meta/apexcode/apex_gov_limits.htm
 		//
+
+        // Get Merge Metric
+        List<C501_Merge_Metric__c> mergeMetric = [SELECT Id, Total_Merge__c FROM C501_Merge_Metric__c WHERE Name = 'Account100'];
+        if (mergeMetric.isEmpty()) {
+            mergeMetric.add( new C501_Merge_Metric__c (
+                Name = 'Account100'
+            ));
+
+            insert mergeMetric;
+        }
+
 		AggregateResult[] allAggregatedAccounts = [
             SELECT Count(Id), BillingStreet, Phone, MAX(Id), MIN(Id)
             FROM Account

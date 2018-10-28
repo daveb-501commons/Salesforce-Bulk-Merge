@@ -30,6 +30,8 @@
         <members>C501_Account_Merge__c.Merge_Metric__c</members>
         <members>C501_Account_Merge__c.Merge_Target_Account__c</members>
         <members>C501_Account_Merge__c.Unique_Id__c</members>
+        <members>C501_Account_Merge__c.Merge_Action__c</members>
+        <members>C501_Merge_Metric__c.Total_Merge__c</members>
         <name>CustomField</name>
     </types>
     <types>
@@ -79,6 +81,7 @@
     </types>
     <types>
         <members>C501_Intake_Programs</members>
+        <members>C501_Merge_Actions</members>
         <name>GlobalValueSet</name>
     </types>
     <types>

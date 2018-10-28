@@ -319,6 +319,7 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
 
                     // Reassign Account Merges
                     // TBD - except the one related to master account
+                    // Update Merge Metric Total_Merge__c for each merged household (other than master)
 
                     // Reassign Addresses
                     // TBD - make sure not creating duplicates
