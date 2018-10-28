@@ -169,13 +169,18 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
         // if they haven't yet picked an account
         if (accountFilter.Id == null) return;           
         
-		Map<Id,Decimal> accountsMerge = new Map<Id,Decimal>();
-        accountsMerge.put(accountFilter.Id, 100.0);
+		Map<Id,C501_Account_Merge__c> accountsMerge = new Map<Id,C501_Account_Merge__c>();
+        accountsMerge.put(accountFilter.Id, new C501_Account_Merge__c(
+            Merge_Confidence__c = 100.0,
+            Merge_Action__c = 'Merge'));
 		for(C501_Account_Merge__c accountMerge : [
-			SELECT Merge_Target_Account__c, Merge_Confidence__c
+			SELECT Merge_Target_Account__c, Merge_Confidence__c, Merge_Action__c
 			FROM C501_Account_Merge__c
 			WHERE Account__c = :accountFilter.Id AND isDeleted = false]) {
-        		accountsMerge.put(accountMerge.Merge_Target_Account__c, accountMerge.Merge_Confidence__c);
+        		accountsMerge.put(accountMerge.Merge_Target_Account__c, new C501_Account_Merge__c(
+                    Merge_Action__c = accountMerge.Merge_Action__c,
+                    Merge_Confidence__c = accountMerge.Merge_Confidence__c
+                ));
 		}
 
         string strSoql = 
@@ -200,7 +205,9 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
 
         for ( Account account :listAccounts ) {
             if (accountsMerge.containsKey(account.Id)) {
-                account.C501_Merge_Confidence__c = accountsMerge.get(account.Id);
+                C501_Account_Merge__c mergeAccount = accountsMerge.get(account.Id);
+                account.C501_Merge_Action__c = mergeAccount.Merge_Action__c;
+                account.C501_Merge_Confidence__c = mergeAccount.Merge_Confidence__c;
             }
         }
     }
@@ -269,9 +276,14 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
                     // we couldn't reliably mark dirty records in all scenarios,
                     // so we've decided it is better to always update all records.
                     //if (setAccountsIdDirty.contains(account.Id)) 
-                    listAccountsMergeIgnore.add(account);
+                    listAccountsMergeIgnore.add(new C501_Account_Merge__c(
+                        Account__c = account.Id,
+                        Merge_Target_Account__c = account.Id
+                    ));
                 }
             }
+
+            Integer recordsUpdated = listAccountsMergeIgnore.size() + listAccountsMerge.size();
             
             // Get related Service Households per Account
             Map<Id, List<Id>> serviceHouseholds = new Map<Id, List<Id>>();
@@ -287,6 +299,10 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
                     else {
                         serviceHouseholds.put(serviceHousehold.C501_Household__c, new List<Id> {serviceHousehold.Id});
                     }
+            }
+
+            if (!listAccountsMergeIgnore.isEmpty()) {
+                update listAccountsMergeIgnore;
             }
 
             // Step 2: Check to Merge accounts
@@ -342,7 +358,7 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
             // Update Merge Count
             //update mergeMetric[0];
 
-            strSaveResults = listAccountsUpdate.size() + ' ' + Label.labelMassMergeSaveSuccess;
+            strSaveResults = recordsUpdated + ' ' + Label.labelMassMergeSaveSuccess;
             ApexPages.addMessage(new ApexPages.message(ApexPages.Severity.CONFIRM, strSaveResults));
 
             // successful save, so clear out dirty list
