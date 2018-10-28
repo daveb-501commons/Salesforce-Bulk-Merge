@@ -16,10 +16,10 @@ global class C501_MassMerge_Rule_Account_AddressPhone implements Schedulable {
 		//
 
         // Get Merge Metric
-        List<C501_Merge_Metric__c> mergeMetric = [SELECT Id, Total_Merge__c FROM C501_Merge_Metric__c WHERE Name = 'Account100'];
+        List<C501_Merge_Metric__c> mergeMetric = [SELECT Id, Total_Merge__c FROM C501_Merge_Metric__c WHERE Name = 'Account_AddressPhone'];
         if (mergeMetric.isEmpty()) {
             mergeMetric.add( new C501_Merge_Metric__c (
-                Name = 'Account100'
+                Name = 'Account_AddressPhone'
             ));
 
             insert mergeMetric;

@@ -327,6 +327,9 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
                     // Reassign Client Visits (Intake)
                     // TBD
 
+                    // Update Merge Metric
+                    // Add 1 to Total_Merge__c
+
                     // Delete Account
                     listAccountsDelete.add(account);
                 }
@@ -340,6 +343,9 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
                 //delete listAccountsDelete;
             }
            
+            // Update Merge Count
+            //update mergeMetric[0];
+
             strSaveResults = listAccountsUpdate.size() + ' ' + Label.labelMassMergeSaveSuccess;
             ApexPages.addMessage(new ApexPages.message(ApexPages.Severity.CONFIRM, strSaveResults));
 
