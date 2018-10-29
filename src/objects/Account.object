@@ -21,6 +21,17 @@
         <label>MassMergeAccounts</label>
     </fieldSets>
     <fields>
+        <fullName>C501_Merge_Account__c</fullName>
+        <externalId>false</externalId>
+        <label>Merge Account</label>
+        <length>18</length>
+        <required>false</required>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <type>Text</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
         <fullName>C501_Merge_Action__c</fullName>
         <externalId>false</externalId>
         <label>Merge Action</label>

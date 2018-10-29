@@ -212,7 +212,7 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
                 account.C501_Merge_Action__c = mergeAccount.Merge_Action__c;
                 account.C501_Merge_Confidence__c = mergeAccount.Merge_Confidence__c;
                 account.C501_Merge_Target__c = mergeAccount.Merge_Target_Account__c;
-                //account.C501_Merge_Account__c = mergeAccount.Id;
+                account.C501_Merge_Account__c = mergeAccount.Id;
             }
         }
     }
@@ -282,7 +282,7 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
                     // so we've decided it is better to always update all records.
                     //if (setAccountsIdDirty.contains(account.Id)) 
                     listAccountsMergeIgnore.add(new C501_Account_Merge__c(
-                        //Id = account.Merge_Account__c,
+                        Id = account.C501_Merge_Account__c,
                         Account__c = account.Id,
                         Merge_Target_Account__c = account.C501_Merge_Target__c
                     ));
