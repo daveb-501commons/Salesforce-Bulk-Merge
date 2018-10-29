@@ -174,12 +174,15 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
             Merge_Confidence__c = 100.0,
             Merge_Action__c = 'Merge'));
 		for(C501_Account_Merge__c accountMerge : [
-			SELECT Merge_Target_Account__c, Merge_Confidence__c, Merge_Action__c
+			SELECT Merge_Target_Account__c, Merge_Confidence__c, Merge_Action__c, Id, Account__c
 			FROM C501_Account_Merge__c
 			WHERE Account__c = :accountFilter.Id AND isDeleted = false]) {
         		accountsMerge.put(accountMerge.Merge_Target_Account__c, new C501_Account_Merge__c(
+                    Id = accountMerge.Id,
                     Merge_Action__c = accountMerge.Merge_Action__c,
-                    Merge_Confidence__c = accountMerge.Merge_Confidence__c
+                    Merge_Confidence__c = accountMerge.Merge_Confidence__c,
+                    Merge_Target_Account__c = accountMerge.Merge_Target_Account__c,
+                    Account__c = accountMerge.Account__c
                 ));
 		}
 
@@ -208,6 +211,8 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
                 C501_Account_Merge__c mergeAccount = accountsMerge.get(account.Id);
                 account.C501_Merge_Action__c = mergeAccount.Merge_Action__c;
                 account.C501_Merge_Confidence__c = mergeAccount.Merge_Confidence__c;
+                account.C501_Merge_Target__c = mergeAccount.Merge_Target_Account__c;
+                //account.C501_Merge_Account__c = mergeAccount.Id;
             }
         }
     }
@@ -277,8 +282,9 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
                     // so we've decided it is better to always update all records.
                     //if (setAccountsIdDirty.contains(account.Id)) 
                     listAccountsMergeIgnore.add(new C501_Account_Merge__c(
+                        //Id = account.Merge_Account__c,
                         Account__c = account.Id,
-                        Merge_Target_Account__c = account.Id
+                        Merge_Target_Account__c = account.C501_Merge_Target__c
                     ));
                 }
             }
