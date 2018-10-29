@@ -216,7 +216,7 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
                 account.C501_Merge_Confidence__c = mergeAccount.Merge_Confidence__c;
                 account.C501_Merge_Target__c = mergeAccount.Merge_Target_Account__c;
                 account.C501_Merge_Account__c = mergeAccount.Id;
-                //account.Merge_Metric_Name__c = mergeAccount.Merge_Metric__c.Name;
+                account.C501_Merge_Metric_Name__c = mergeAccount.Merge_Metric__c;
             }
         }
     }
@@ -369,7 +369,7 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
       		for(C501_Merge_Metric__c mergeMetric : [
                 SELECT Id, Name, Total_Merge__c
                 FROM C501_Merge_Metric__c]) {
-                    mergeMetrics.put(mergeMetric.Name, mergeMetric);
+                    mergeMetrics.put(mergeMetric.Id, mergeMetric);
                 }
 
             // Step 2: Check to Merge accounts
@@ -431,13 +431,15 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
                     }
 
                     // Update Merge Metric
-/*                    if (mergeMetrics.containsKey(account.C501_Merge_Metric_Name__c)) {
-                        mergeMetric[0].Total_Merge__c = mergeMetric[0].Total_Merge__c + 1;
+                    if (mergeMetrics.containsKey(account.C501_Merge_Metric_Name__c)) {
+                        C501_Merge_Metric__c mergeMetric = mergeMetrics.remove(account.C501_Merge_Metric_Name__c);
+                        mergeMetric.Total_Merge__c = (mergeMetric.Total_Merge__c == null) ? 1 : mergeMetric.Total_Merge__c + 1;
+                        mergeMetrics.put(account.C501_Merge_Metric_Name__c, mergeMetric);
                     }
                     else {
                         throw new C501_CTRL_MassMergeAccountsException('Merge Setup Error - Missing Merge Metric Record: ' + account.C501_Merge_Metric_Name__c);
                     }
-*/
+
                     // Delete Account
                     listAccountsDelete.add(account);
                 }

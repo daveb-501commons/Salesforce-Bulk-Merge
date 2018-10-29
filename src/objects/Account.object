@@ -78,6 +78,17 @@
         <type>Percent</type>
     </fields>
     <fields>
+        <fullName>C501_Merge_Metric_Name__c</fullName>
+        <externalId>false</externalId>
+        <label>Merge Metric Name</label>
+        <length>80</length>
+        <required>false</required>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <type>Text</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
         <fullName>C501_Merge_Target__c</fullName>
         <externalId>false</externalId>
         <label>Merge Target</label>
