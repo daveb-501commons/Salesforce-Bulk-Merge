@@ -46,7 +46,11 @@ global with sharing class C501_MassMerge_SharedCode {
 
                 for (C501_Account_Merge__c mergeAccount : [
                     select Account__c from C501_Account_Merge__c
-                    where Account__c = :account.Id and (Merge_Confidence__c >= :fromMergeConfidence and Merge_Confidence__c <= :toMergeConfidence) 
+                    where Account__c = :account.Id
+                        and Merge_Target_Account__c <> :account.Id
+                        and Merge_Confidence__c >= :fromMergeConfidence
+                        and Merge_Confidence__c <= :toMergeConfidence
+                        and Merge_Action__c <> 'Ignore' 
                     limit 1]) {
                         if (String.isBlank(programName)) {
                             listSO.add(new SelectOption(account.Id, account.Name));

@@ -30,6 +30,8 @@
 
 global virtual with sharing class C501_CTRL_MassMergeAccounts {
 
+    public class C501_CTRL_MassMergeAccountsException extends Exception {}
+
     global integer cEmptyAccountRecords {
         get {
             return 1;
@@ -174,7 +176,7 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
             Merge_Confidence__c = 100.0,
             Merge_Action__c = 'Merge'));
 		for(C501_Account_Merge__c accountMerge : [
-			SELECT Merge_Target_Account__c, Merge_Confidence__c, Merge_Action__c, Id, Account__c
+			SELECT Id, Account__c, Merge_Target_Account__c, Merge_Confidence__c, Merge_Action__c, Merge_Metric__c
 			FROM C501_Account_Merge__c
 			WHERE Account__c = :accountFilter.Id AND isDeleted = false]) {
         		accountsMerge.put(accountMerge.Merge_Target_Account__c, new C501_Account_Merge__c(
@@ -182,7 +184,8 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
                     Merge_Action__c = accountMerge.Merge_Action__c,
                     Merge_Confidence__c = accountMerge.Merge_Confidence__c,
                     Merge_Target_Account__c = accountMerge.Merge_Target_Account__c,
-                    Account__c = accountMerge.Account__c
+                    Account__c = accountMerge.Account__c,
+                    Merge_Metric__c = accountMerge.Merge_Metric__c
                 ));
 		}
 
@@ -213,6 +216,7 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
                 account.C501_Merge_Confidence__c = mergeAccount.Merge_Confidence__c;
                 account.C501_Merge_Target__c = mergeAccount.Merge_Target_Account__c;
                 account.C501_Merge_Account__c = mergeAccount.Id;
+                //account.Merge_Metric_Name__c = mergeAccount.Merge_Metric__c.Name;
             }
         }
     }
@@ -284,7 +288,8 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
                     listAccountsMergeIgnore.add(new C501_Account_Merge__c(
                         Id = account.C501_Merge_Account__c,
                         Account__c = account.Id,
-                        Merge_Target_Account__c = account.C501_Merge_Target__c
+                        Merge_Target_Account__c = account.C501_Merge_Target__c,
+                        Merge_Action__c = account.C501_Merge_Action__c
                     ));
                 }
             }
@@ -292,18 +297,66 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
             Integer recordsUpdated = listAccountsMergeIgnore.size() + listAccountsMerge.size();
             
             // Get related Service Households per Account
-            Map<Id, List<Id>> serviceHouseholds = new Map<Id, List<Id>>();
-            for(C501_Service_Household__c serviceHousehold : [
+            Map<Id, List<Id>> relatedServiceHouseholds = new Map<Id, List<Id>>();
+            for(C501_Service_Household__c relatedServiceHousehold : [
                 SELECT Id, C501_Household__c
                 FROM C501_Service_Household__c
                 WHERE C501_Household__c in :listAccountsMerge]) {
-                    if (serviceHouseholds.containsKey(serviceHousehold.C501_Household__c)) {
-                        List<Id> services = serviceHouseholds.remove(serviceHousehold.C501_Household__c);
-                        services.add(serviceHousehold.Id);
-                        serviceHouseholds.put(serviceHousehold.C501_Household__c, services);
+                    if (relatedServiceHouseholds.containsKey(relatedServiceHousehold.C501_Household__c)) {
+                        List<Id> services = relatedServiceHouseholds.remove(relatedServiceHousehold.C501_Household__c);
+                        services.add(relatedServiceHousehold.Id);
+                        relatedServiceHouseholds.put(relatedServiceHousehold.C501_Household__c, services);
                     }
                     else {
-                        serviceHouseholds.put(serviceHousehold.C501_Household__c, new List<Id> {serviceHousehold.Id});
+                        relatedServiceHouseholds.put(relatedServiceHousehold.C501_Household__c, new List<Id> {relatedServiceHousehold.Id});
+                    }
+            }
+
+            // Get related Contacts per Account
+            Map<Id, List<Id>> relatedContacts = new Map<Id, List<Id>>();
+            for(Contact relatedContact : [
+                SELECT Id, AccountId
+                FROM Contact
+                WHERE AccountId in :listAccountsMerge]) {
+                    if (relatedContacts.containsKey(relatedContact.AccountId)) {
+                        List<Id> related = relatedContacts.remove(relatedContact.AccountId);
+                        related.add(relatedContact.Id);
+                        relatedContacts.put(relatedContact.AccountId, related);
+                    }
+                    else {
+                        relatedContacts.put(relatedContact.AccountId, new List<Id> {relatedContact.Id});
+                    }
+            }
+
+            // Get related Client Visits per Account
+            Map<Id, List<Id>> relatedClientVisits = new Map<Id, List<Id>>();
+            for(Client_Visit__c relatedClientVisit : [
+                SELECT Id, C501_IS_Household__c
+                FROM Client_Visit__c
+                WHERE C501_IS_Household__c in :listAccountsMerge]) {
+                    if (relatedClientVisits.containsKey(relatedClientVisit.C501_IS_Household__c)) {
+                        List<Id> related = relatedClientVisits.remove(relatedClientVisit.C501_IS_Household__c);
+                        related.add(relatedClientVisit.Id);
+                        relatedClientVisits.put(relatedClientVisit.C501_IS_Household__c, related);
+                    }
+                    else {
+                        relatedClientVisits.put(relatedClientVisit.C501_IS_Household__c, new List<Id> {relatedClientVisit.Id});
+                    }
+            }
+
+            // Get related Account Merges per Account
+            Map<Id, List<Id>> relatedAccountMerges = new Map<Id, List<Id>>();
+            for(C501_Account_Merge__c relatedAccountMerge : [
+                SELECT Id, Account__c
+                FROM C501_Account_Merge__c
+                WHERE Account__c in :listAccountsMerge]) {
+                    if (relatedAccountMerges.containsKey(relatedAccountMerge.Account__c)) {
+                        List<Id> related = relatedAccountMerges.remove(relatedAccountMerge.Account__c);
+                        related.add(relatedAccountMerge.Id);
+                        relatedAccountMerges.put(relatedAccountMerge.Account__c, related);
+                    }
+                    else {
+                        relatedAccountMerges.put(relatedAccountMerge.Account__c, new List<Id> {relatedAccountMerge.Id});
                     }
             }
 
@@ -311,8 +364,19 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
                 update listAccountsMergeIgnore;
             }
 
+            // Get Merge Metrics
+            Map<String, C501_Merge_Metric__c> mergeMetrics = new Map<String, C501_Merge_Metric__c>();
+      		for(C501_Merge_Metric__c mergeMetric : [
+                SELECT Id, Name, Total_Merge__c
+                FROM C501_Merge_Metric__c]) {
+                    mergeMetrics.put(mergeMetric.Name, mergeMetric);
+                }
+
             // Step 2: Check to Merge accounts
             list<C501_Service_Household__c> listServiceHouseholdsUpdate = new list<C501_Service_Household__c>();
+            list<Contact> listContactsUpdate = new list<Contact>();
+            list<C501_Account_Merge__c> listAccountMergesUpdate = new list<C501_Account_Merge__c>();
+            list<Client_Visit__c> listClientVisitsUpdate = new list<Client_Visit__c>();
             list<Account> listAccountsDelete = new list<Account>();
             if (listAccountsMerge.size() >= 2) {
                 Account masterAccount = listAccountsMerge.remove(1);
@@ -322,8 +386,8 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
                         + ' account.C501_Merge_Action__c: ' + account.C501_Merge_Action__c);
 
                     // Reassign Service Households
-                    if (serviceHouseholds.containsKey(account.Id)) {
-                        List<Id> services = serviceHouseholds.remove(account.Id);
+                    if (relatedServiceHouseholds.containsKey(account.Id)) {
+                        List<Id> services = relatedServiceHouseholds.remove(account.Id);
                         for (Id serviceId : services) {
                             listServiceHouseholdsUpdate.add(new C501_Service_Household__c(
                                 Id = serviceId,
@@ -334,20 +398,46 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
 
                     // Reassign Contacts
                     // TBD - Merge contacts and seperate household for each contact not merge
+                    if (relatedContacts.containsKey(account.Id)) {
+                        List<Id> related = relatedContacts.remove(account.Id);
+                        for (Id objectId : related) {
+                            listContactsUpdate.add(new Contact(
+                                Id = objectId,
+                                AccountId = masterAccount.Id
+                            ));
+                        }
+                    }
 
                     // Reassign Account Merges
-                    // TBD - except the one related to master account
-                    // Update Merge Metric Total_Merge__c for each merged household (other than master)
-
-                    // Reassign Addresses
-                    // TBD - make sure not creating duplicates
+                    if (relatedAccountMerges.containsKey(account.Id) && account.Id <> masterAccount.Id) {
+                        List<Id> related = relatedAccountMerges.remove(account.Id);
+                        for (Id objectId : related) {
+                            listAccountMergesUpdate.add(new C501_Account_Merge__c(
+                                Id = objectId,
+                                Account__c = masterAccount.Id
+                            ));
+                        }
+                    }
 
                     // Reassign Client Visits (Intake)
-                    // TBD
+                    if (relatedClientVisits.containsKey(account.Id)) {
+                        List<Id> related = relatedClientVisits.remove(account.Id);
+                        for (Id objectId : related) {
+                            listClientVisitsUpdate.add(new Client_Visit__c(
+                                Id = objectId,
+                                C501_IS_Household__c = masterAccount.Id
+                            ));
+                        }
+                    }
 
                     // Update Merge Metric
-                    // Add 1 to Total_Merge__c
-
+/*                    if (mergeMetrics.containsKey(account.C501_Merge_Metric_Name__c)) {
+                        mergeMetric[0].Total_Merge__c = mergeMetric[0].Total_Merge__c + 1;
+                    }
+                    else {
+                        throw new C501_CTRL_MassMergeAccountsException('Merge Setup Error - Missing Merge Metric Record: ' + account.C501_Merge_Metric_Name__c);
+                    }
+*/
                     // Delete Account
                     listAccountsDelete.add(account);
                 }
@@ -356,13 +446,25 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
             if (!listServiceHouseholdsUpdate.isEmpty()) {
                 update listServiceHouseholdsUpdate;
             }
+            if (!listContactsUpdate.isEmpty()) {
+                update listContactsUpdate;
+            }
+            if (!listClientVisitsUpdate.isEmpty()) {
+                update listClientVisitsUpdate;
+            }
+            if (!listAccountMergesUpdate.isEmpty()) {
+                update listAccountMergesUpdate;
+            }
 
             if (!listAccountsDelete.isEmpty()) {
                 //delete listAccountsDelete;
             }
            
-            // Update Merge Count
-            //update mergeMetric[0];
+            // Update Merge Counts
+            List<C501_Merge_Metric__c> listMergeMetrics = mergeMetrics.values();
+            if (!listMergeMetrics.isEmpty()) {
+                update listMergeMetrics;
+            }
 
             strSaveResults = recordsUpdated + ' ' + Label.labelMassMergeSaveSuccess;
             ApexPages.addMessage(new ApexPages.message(ApexPages.Severity.CONFIRM, strSaveResults));

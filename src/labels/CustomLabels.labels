@@ -205,7 +205,7 @@
         <language>en_US</language>
         <protected>false</protected>
         <shortDescription>message displayed when Mass Merge Accounts saves successfully.</shortDescription>
-        <value>Requests records have been saved.</value>
+        <value>Account records have been saved.</value>
     </labels>
     <labels>
         <fullName>labelMassMergeTitle</fullName>
