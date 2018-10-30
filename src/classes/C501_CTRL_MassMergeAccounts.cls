@@ -150,6 +150,13 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
         return null;
     }
 
+    global virtual void ResetAccounts() {
+
+        listSOAccounts = null;
+        accountFilter.Id = null;
+        listAccounts = null;
+    }
+
     // status string for reporting the results of saving.
     global String strSaveResults { get; set; }
       
@@ -164,7 +171,7 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
         
         set;
     }
-    
+        
     // helper function that the client can override, to query for the appropriate fields in Accounts.
     global virtual void FillListAccounts() {
 
@@ -173,8 +180,7 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
         
 		Map<Id,C501_Account_Merge__c> accountsMerge = new Map<Id,C501_Account_Merge__c>();
         accountsMerge.put(accountFilter.Id, new C501_Account_Merge__c(
-            Merge_Confidence__c = 100.0,
-            Merge_Action__c = 'Merge'));
+            Merge_Confidence__c = 100.0));
 		for(C501_Account_Merge__c accountMerge : [
 			SELECT Id, Account__c, Merge_Target_Account__c, Merge_Confidence__c, Merge_Action__c, Merge_Metric__c
 			FROM C501_Account_Merge__c
@@ -378,6 +384,7 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
             list<C501_Account_Merge__c> listAccountMergesUpdate = new list<C501_Account_Merge__c>();
             list<Client_Visit__c> listClientVisitsUpdate = new list<Client_Visit__c>();
             list<Account> listAccountsDelete = new list<Account>();
+            list<C501_Account_Merge__c> listAccountMergesDelete = new List<C501_Account_Merge__c>();
             if (listAccountsMerge.size() >= 2) {
                 Account masterAccount = listAccountsMerge.remove(1);
                 for (Account account : listAccountsMerge) {
@@ -442,6 +449,11 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
 
                     // Delete Account
                     listAccountsDelete.add(account);
+
+                    // Delete Account Merge
+                    listAccountMergesDelete.add(new C501_Account_Merge__c (
+                        Id = account.C501_Merge_Account__c
+                    ));
                 }
             }
 
@@ -459,9 +471,13 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
             }
 
             if (!listAccountsDelete.isEmpty()) {
-                //delete listAccountsDelete;
+                delete listAccountsDelete;
             }
-           
+
+            if (!listAccountMergesDelete.isEmpty()) {
+                delete listAccountMergesDelete;
+            }
+
             // Update Merge Counts
             List<C501_Merge_Metric__c> listMergeMetrics = mergeMetrics.values();
             if (!listMergeMetrics.isEmpty()) {
@@ -473,6 +489,9 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
 
             // successful save, so clear out dirty list
             setAccountsIdDirty = null;
+
+            // Refresh Account and Account Table
+            ResetAccounts();
 
             return null;            
 

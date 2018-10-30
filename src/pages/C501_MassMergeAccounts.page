@@ -77,7 +77,7 @@
                     <div class="slds-col--padded slds-no-flex slds-align-middle">
                         <div class="slds-button-group" role="group">
                             <apex:commandButton styleClass="slds-button slds-button--neutral" action="{!Cancel}" value="{!IF(ISNULL(strSaveResults), $Label.labelButtonCancel, $Label.labelButtonClose)}" immediate="true" reRender="vfform"/> 
-                            <apex:commandButton styleClass="slds-button slds-button--brand" action="{!SaveAccounts}" value="{!$Label.labelButtonSave}" id="btnSave" immediate="false" reRender="vfform"/>
+                            <apex:commandButton styleClass="slds-button slds-button--brand" action="{!SaveAccounts}" value="{!$Label.labelButtonSave}" id="btnSave" immediate="false" reRender="vfform,ddlAccounts,tblAccounts"/>
                             <apex:commandButton styleClass="slds-button slds-button--neutral" action="{!SaveAndCloseAccounts}" value="{!$Label.labelButtonSaveAndClose}" id="btnSaveClose" immediate="false" reRender="vfform"/>
                         </div>
                     </div>
