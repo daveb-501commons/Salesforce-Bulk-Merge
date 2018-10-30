@@ -215,6 +215,14 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
         
         listAccounts = Database.Query(strSoql);
 
+        // Get Merge Metrics
+        Map<Id, String> mergeMetrics = new Map<Id, String>();
+        for(C501_Merge_Metric__c mergeMetric : [
+            SELECT Id, Name
+            FROM C501_Merge_Metric__c]) {
+                mergeMetrics.put(mergeMetric.Id, mergeMetric.Name);
+        }
+
         for ( Account account :listAccounts ) {
             if (accountsMerge.containsKey(account.Id)) {
                 C501_Account_Merge__c mergeAccount = accountsMerge.get(account.Id);
@@ -222,7 +230,13 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
                 account.C501_Merge_Confidence__c = mergeAccount.Merge_Confidence__c;
                 account.C501_Merge_Target__c = mergeAccount.Merge_Target_Account__c;
                 account.C501_Merge_Account__c = mergeAccount.Id;
-                account.C501_Merge_Metric_Name__c = mergeAccount.Merge_Metric__c;
+
+                if (mergeMetrics.containsKey(mergeAccount.Merge_Metric__c)) {
+                    account.C501_Merge_Metric_Name__c = mergeMetrics.get(mergeAccount.Merge_Metric__c);
+                }
+                else {
+                    account.C501_Merge_Metric_Name__c = 'Selected Household';
+                }
             }
         }
     }
@@ -372,11 +386,11 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
 
             // Get Merge Metrics
             Map<String, C501_Merge_Metric__c> mergeMetrics = new Map<String, C501_Merge_Metric__c>();
-      		for(C501_Merge_Metric__c mergeMetric : [
+            for(C501_Merge_Metric__c mergeMetric : [
                 SELECT Id, Name, Total_Merge__c
                 FROM C501_Merge_Metric__c]) {
-                    mergeMetrics.put(mergeMetric.Id, mergeMetric);
-                }
+                    mergeMetrics.put(mergeMetric.Name, mergeMetric);
+            }
 
             // Step 2: Check to Merge accounts
             list<C501_Service_Household__c> listServiceHouseholdsUpdate = new list<C501_Service_Household__c>();
@@ -444,7 +458,7 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
                         mergeMetrics.put(account.C501_Merge_Metric_Name__c, mergeMetric);
                     }
                     else {
-                        throw new C501_CTRL_MassMergeAccountsException('Merge Setup Error - Missing Merge Metric Record: ' + account.C501_Merge_Metric_Name__c);
+                        throw new C501_CTRL_MassMergeAccountsException('C501_CTRL_MassMergeAccounts::SaveAccounts - Merge Setup Error - Missing Merge Metric Record: ' + account.C501_Merge_Metric_Name__c);
                     }
 
                     // Delete Account
