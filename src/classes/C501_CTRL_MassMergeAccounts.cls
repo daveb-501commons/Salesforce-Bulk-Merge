@@ -275,7 +275,7 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
             FROM Contact
             WHERE AccountId in :mergeAccounts];
 
-        Set<Id> mergeContactIds = new Set<Id>();
+        List<Id> mergeContactIds = new List<Id>();
         for (Contact mergeContact :mergeContacts) {
             mergeContactIds.add(mergeContact.Id);
         }
@@ -290,8 +290,26 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
             FROM Contact
             WHERE AccountId = :masterAccountId];
 
+        List<Id> masterContactIds = new List<Id>();
+        for (Contact masterContact :masterContacts) {
+            masterContactIds.add(masterContact.Id);
+        }
+
+        List<Id> allContacttIds = new List<Id>(mergeContactIds);
+        allContacttIds.addAll(masterContactIds);
+        Set<String> uniqueOtherNames = new Set<String>();
+        List<C501_Other_Name__c> contactOtherNames = new List<C501_Other_Name__c>();
+        for(C501_Other_Name__c contactOtherName : [
+            SELECT Id, C501_Contact__c, C501_Other_Name__c
+            FROM C501_Other_Name__c
+            WHERE C501_Contact__c in :allContacttIds]) {
+                contactOtherNames.add(contactOtherName);
+                uniqueOtherNames.add(contactOtherName.C501_Contact__c + contactOtherName.C501_Other_Name__c);
+            }
+
         List<Contact> listDeleteContacts = new List<Contact>();
         List<C501_Service_Contact__c> listUpdateServiceContacts = new List<C501_Service_Contact__C>();
+        List<C501_Other_Name__c> listUpdateContactOtherNames = new List<C501_Other_Name__c>();
         for(Contact masterContact :masterContacts) {
 
             for (contact mergeContact : mergeContacts) {
@@ -311,6 +329,20 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
                         }
                     }
 
+                    // Reassign any Contact Other Names
+                    for (C501_Other_Name__c contactOtherName :contactOtherNames) {
+                        if (contactOtherName.C501_Contact__c == mergeContact.Id) {
+
+                            // Add Other Name if doesn't already exist
+                            if (!uniqueOtherNames.contains(masterContact.Id + contactOtherName.C501_Other_Name__c)) {
+                                listUpdateContactOtherNames.add( new C501_Other_Name__c (
+                                    Id = contactOtherName.Id,
+                                    C501_Contact__c = masterContact.Id
+                                ));
+                            }
+                        }
+                    }
+
                     listDeleteContacts.add(mergeContact);
                 }
             }
@@ -318,6 +350,10 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
 
         if (!listUpdateServiceContacts.isEmpty()) {
             update listUpdateServiceContacts;
+        }
+
+        if (!listUpdateContactOtherNames.isEmpty()) {
+            update listUpdateContactOtherNames;
         }
 
         if (!listDeleteContacts.isEmpty()) {
