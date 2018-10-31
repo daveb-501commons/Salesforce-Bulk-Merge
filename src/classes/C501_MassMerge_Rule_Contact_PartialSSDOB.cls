@@ -16,10 +16,10 @@ global class C501_MassMerge_Rule_Contact_PartialSSDOB implements Schedulable {
 		//
 
         // Get Merge Metric
-        List<C501_Merge_Metric__c> mergeMetric = [SELECT Id, Total_Merge__c FROM C501_Merge_Metric__c WHERE Name = 'Contact_PartialSS'];
+        List<C501_Merge_Metric__c> mergeMetric = [SELECT Id, Total_Merge__c FROM C501_Merge_Metric__c WHERE Name = 'Contact_PartialSSDOB'];
         if (mergeMetric.isEmpty()) {
             mergeMetric.add( new C501_Merge_Metric__c (
-                Name = 'Contact_PartialSS'
+                Name = 'Contact_PartialSSDOB'
             ));
 
             insert mergeMetric;
