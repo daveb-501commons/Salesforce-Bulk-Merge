@@ -271,7 +271,7 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
     global void ContactsMerge(Id masterAccountId, List<Account> mergeAccounts) {
 
         List<Contact> mergeContacts = [
-            SELECT Id, AccountId, Birthdate, Name
+            SELECT Id, AccountId, Birthdate, FirstName
             FROM Contact
             WHERE AccountId in :mergeAccounts];
 
@@ -293,7 +293,7 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
             WHERE C501_Contact__c in :mergeContactIds];
 
         List<Contact> masterContacts = [
-            SELECT Id, AccountId, Birthdate, Name
+            SELECT Id, AccountId, Birthdate, FirstName
             FROM Contact
             WHERE AccountId = :masterAccountId];
 
@@ -526,14 +526,13 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
                     mergeMetric.Total_Merge__c = (mergeMetric.Total_Merge__c == null) ? 1 : mergeMetric.Total_Merge__c + 1;
                     mergeMetrics.put(account.C501_Merge_Metric_Name__c, mergeMetric);
                 }
-                else {
-                    throw new C501_CTRL_MassMergeAccountsException('C501_CTRL_MassMergeAccounts::SaveAccounts - Merge Setup Error - Missing Merge Metric Record: ' + account.C501_Merge_Metric_Name__c);
-                }
 
                 // Delete Account Merge
-                listAccountMergesDelete.add(new C501_Account_Merge__c (
-                    Id = account.C501_Merge_Account__c
-                ));
+                if (account.C501_Merge_Account__c != null && !String.isBlank(account.C501_Merge_Account__c)) {
+                    listAccountMergesDelete.add(new C501_Account_Merge__c (
+                        Id = account.C501_Merge_Account__c
+                    ));
+                }
             }
 
             if (!listServiceHouseholdsUpdate.isEmpty()) {
@@ -546,11 +545,11 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
                 update listAccountMergesUpdate;
             }
 
+            ContactsMerge(masterAccountId, listAccountsMerge);
+
             if (!listAccountMergesDelete.isEmpty()) {
                 delete listAccountMergesDelete;
             }
-
-            ContactsMerge(masterAccountId, listAccountsMerge);
 
             // Update Merge Counts
             List<C501_Merge_Metric__c> listMergeMetrics = mergeMetrics.values();
