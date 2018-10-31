@@ -24,6 +24,10 @@
         <name>ApexPage</name>
     </types>
     <types>
+        <members>C501_Mass_Merge</members>
+        <name>CustomApplication</name>
+    </types>
+    <types>
         <members>Account.C501_Merge_Account__c</members>
         <members>Account.C501_Merge_Action__c</members>
         <members>Account.C501_Merge_Confidence_From__c</members>
