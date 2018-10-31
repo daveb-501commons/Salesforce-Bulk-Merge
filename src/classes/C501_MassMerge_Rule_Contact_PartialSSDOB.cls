@@ -2,12 +2,12 @@
 // Run Code from Developer Console
 //  1) Debug -> Open Execute Anonymous Window
 //  2) paste code
-//      C501_MassMerge_Rule_Contact_PartialSS schedule = new C501_MassMerge_Rule_Contact_PartialSS();
+//      C501_MassMerge_Rule_Contact_PartialSSDOB schedule = new C501_MassMerge_Rule_Contact_PartialSSDOB();
 //      schedule.execute(null);
 //  3) click Execute
 //
 
-global class C501_MassMerge_Rule_Contact_PartialSS implements Schedulable {
+global class C501_MassMerge_Rule_Contact_PartialSSDOB implements Schedulable {
 
     global void execute(SchedulableContext SC) {
 
@@ -26,10 +26,10 @@ global class C501_MassMerge_Rule_Contact_PartialSS implements Schedulable {
         }
 
 		AggregateResult[] allAggregatedAccounts = [
-            SELECT Count(Id), C501_Partial_Social_Security_Id__c, MAX(AccountId), MIN(AccountId)
+            SELECT Count(Id), Birthdate, C501_Partial_Social_Security_Id__c, MAX(AccountId), MIN(AccountId)
             FROM Contact
-            Where C501_Partial_Social_Security_Id__c <> ''
-            Group By C501_Partial_Social_Security_Id__c
+            Where C501_Partial_Social_Security_Id__c <> '' and Birthdate <> null
+            Group By C501_Partial_Social_Security_Id__c, Birthdate
             Having Count(Id) > 1
             Order By Count(Id) DESC
             LIMIT 10];
