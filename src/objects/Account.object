@@ -14,7 +14,12 @@
             <isRequired>false</isRequired>
         </displayedFields>
         <displayedFields>
-            <field>Billing_Address__c</field>
+            <field>C501_Billing_Address__c</field>
+            <isFieldManaged>false</isFieldManaged>
+            <isRequired>false</isRequired>
+        </displayedFields>
+        <displayedFields>
+            <field>C501_Shipping_Address__c</field>
             <isFieldManaged>false</isFieldManaged>
             <isRequired>false</isRequired>
         </displayedFields>

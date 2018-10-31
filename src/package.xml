@@ -3,7 +3,9 @@
     <types>
         <members>C501_CTRL_MassMergeAccounts</members>
         <members>C501_CTRL_MassMergeAccounts_TEST</members>
+        <members>C501_MassMerge_Rule_Account_Address</members>
         <members>C501_MassMerge_Rule_Account_AddressPhone</members>
+        <members>C501_MassMerge_Rule_Account_Phone</members>
         <members>C501_MassMerge_Rule_Contact_PartialSSDOB</members>
         <members>C501_MassMerge_Rule_Contact_Phone</members>
         <members>C501_MassMerge_Scheduler_TEST</members>

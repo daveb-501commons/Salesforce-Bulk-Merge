@@ -2,12 +2,12 @@
 // Run Code from Developer Console
 //  1) Debug -> Open Execute Anonymous Window
 //  2) paste code
-//      C501_MassMerge_Rule_Account_AddressPhone schedule = new C501_MassMerge_Rule_Account_AddressPhone();
+//      C501_MassMerge_Rule_Account_Phone schedule = new C501_MassMerge_Rule_Account_Phone();
 //      schedule.execute(null);
 //  3) click Execute
 //
 
-global class C501_MassMerge_Rule_Account_AddressPhone implements Schedulable {
+global class C501_MassMerge_Rule_Account_Phone implements Schedulable {
 
     global void execute(SchedulableContext SC) {
 
@@ -16,34 +16,23 @@ global class C501_MassMerge_Rule_Account_AddressPhone implements Schedulable {
 		//
 
         // Get Merge Metric
-        List<C501_Merge_Metric__c> mergeMetric = [SELECT Id, Total_Merge__c FROM C501_Merge_Metric__c WHERE Name = 'Account_AddressPhone'];
+        List<C501_Merge_Metric__c> mergeMetric = [SELECT Id, Total_Merge__c FROM C501_Merge_Metric__c WHERE Name = 'Account_Phone'];
         if (mergeMetric.isEmpty()) {
             mergeMetric.add( new C501_Merge_Metric__c (
-                Name = 'Account_AddressPhone'
+                Name = 'Account_Phone'
             ));
 
             insert mergeMetric;
         }
 
 		AggregateResult[] allAggregatedAccounts = [
-            SELECT Count(Id), BillingStreet, Phone, MAX(Id), MIN(Id)
+            SELECT Count(Id), Phone, MAX(Id), MIN(Id)
             FROM Account
-            Where BillingStreet <> '' and Phone <> '' and Phone <> '()'
-            Group By BillingStreet, Phone
+            Where Phone <> '' and Phone <> '()'
+            Group By Phone
             Having Count(Id) > 1
             Order By Count(Id) DESC
             LIMIT 10];
-
-		AggregateResult[] allAggregatedAccountsAdditional = [
-            SELECT Count(Id), ShippingStreet, Phone, MAX(Id), MIN(Id)
-            FROM Account
-            Where ShippingStreet <> '' and Phone <> '' and Phone <> '()'
-            Group By ShippingStreet, Phone
-            Having Count(Id) > 1
-            Order By Count(Id) DESC
-            LIMIT 10];
-
-        allAggregatedAccounts.addAll(allAggregatedAccountsAdditional);
 
         Map<String, C501_Account_Merge__c> mergeAccounts = new Map<String, C501_Account_Merge__c>();
         String maxId;
@@ -55,7 +44,7 @@ global class C501_MassMerge_Rule_Account_AddressPhone implements Schedulable {
             uniqueId = String.valueOf(maxId) + String.valueOf(maxId);
             mergeAccounts.put(uniqueId, new C501_Account_Merge__c(
                 Unique_Id__c = uniqueId,
-                Merge_Confidence__c = 100.0,
+                Merge_Confidence__c = 95.0,
                 Account__c = minId,
                 Merge_Target_Account__c = maxId,
                 Merge_Metric__c = mergeMetric[0].Id

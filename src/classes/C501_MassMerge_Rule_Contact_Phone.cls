@@ -43,7 +43,7 @@ global class C501_MassMerge_Rule_Contact_Phone implements Schedulable {
             uniqueId = String.valueOf(maxId) + String.valueOf(maxId);
             mergeAccounts.put(uniqueId, new C501_Account_Merge__c(
                 Unique_Id__c = uniqueId,
-                Merge_Confidence__c = 100.0,
+                Merge_Confidence__c = 80.0,
                 Account__c = minId,
                 Merge_Target_Account__c = maxId,
                 Merge_Metric__c = mergeMetric[0].Id

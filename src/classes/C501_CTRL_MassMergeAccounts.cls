@@ -271,7 +271,7 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
     global void ContactsMerge(Id masterAccountId, List<Account> mergeAccounts) {
 
         List<Contact> mergeContacts = [
-            SELECT Id, AccountId, Birthdate, FirstName
+            SELECT Id, AccountId, Birthdate, FirstName, Phone
             FROM Contact
             WHERE AccountId in :mergeAccounts];
 
@@ -334,10 +334,28 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
         }
 
         // Delete Accounts that don't have any contacts
+        List<Account> updateAccountsClearInfo = new List<Account>();
         for (Contact mergeContact :mergeContacts) {
             if (deleteAccountsNoContacts.containsKey(mergeContact.AccountId)) {
-                deleteAccountsNoContacts.remove(mergeContact.AccountId);
+                Account updateAccount = deleteAccountsNoContacts.remove(mergeContact.AccountId);
+                updateAccount.BillingStreet = '';
+                updateAccount.BillingCity = '';
+                updateAccount.BillingState = '';
+                updateAccount.BillingPostalCode = '';
+                updateAccount.ShippingStreet = '';
+                updateAccount.ShippingCity = '';
+                updateAccount.ShippingState = '';
+                updateAccount.ShippingPostalCode = '';
+                updateAccount.npe01__One2OneContact__c = mergeContact.Id;
+                updateAccount.Phone = mergeContact.Phone;
+
+                updateAccountsClearInfo.add(
+                    updateAccount);
             }
+        }
+
+        if (!updateAccountsClearInfo.isEmpty()) {
+            update updateAccountsClearInfo;
         }
 
         if (!deleteAccountsNoContacts.values().isEmpty()) {
