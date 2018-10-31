@@ -275,13 +275,6 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
             FROM Contact
             WHERE AccountId in :mergeAccounts];
 
-        Map<Id, Account> deleteAccountsNoContacts = new Map<Id, Account>();
-        for (Contact mergeContact :mergeContacts) {
-            deleteAccountsNoContacts.put(mergeContact.AccountId, new Account(
-                Id = mergeContact.AccountId
-            ));
-        }
-
         Set<Id> mergeContactIds = new Set<Id>();
         for (Contact mergeContact :mergeContacts) {
             mergeContactIds.add(mergeContact.Id);
@@ -301,15 +294,16 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
         List<C501_Service_Contact__c> listUpdateServiceContacts = new List<C501_Service_Contact__C>();
         for(Contact masterContact :masterContacts) {
 
-            Integer mergeContactsIndex = mergeContacts.size() - 1;
-            while (mergeContactsIndex >= 0) {
+            for (contact mergeContact : mergeContacts) {
 
                 // Match based on Birthdate and Firstname (in case of Twins).  Don't match Last Name in case of name change
-                if (masterContact.Birthdate == mergeContacts[mergeContactsIndex].Birthdate && masterContact.FirstName == mergeContacts[mergeContactsIndex].FirstName) {
+                if (masterContact.Birthdate == mergeContact.Birthdate
+                    && masterContact.FirstName == mergeContact.FirstName
+                    && masterAccountId != mergeContact.AccountId) {
                     
                     // Reassign any service contacts
                     for (C501_Service_Contact__c serviceContact :mergeServiceContacts) {
-                        if (serviceContact.C501_Contact__c == mergeContacts[mergeContactsIndex].Id) {
+                        if (serviceContact.C501_Contact__c == mergeContact.Id) {
                             listUpdateServiceContacts.add( new C501_Service_Contact__c (
                                 Id = serviceContact.Id,
                                 C501_Contact__c = masterContact.Id
@@ -317,11 +311,8 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
                         }
                     }
 
-                    listDeleteContacts.add(mergeContacts.remove(mergeContactsIndex));
-                    mergeContactsIndex--;
+                    listDeleteContacts.add(mergeContact);
                 }
-
-                mergeContactsIndex--;
             }
         }        
 
@@ -333,33 +324,23 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
             delete listDeleteContacts;
         }
 
-        // Delete Accounts that don't have any contacts
-        List<Account> updateAccountsClearInfo = new List<Account>();
-        for (Contact mergeContact :mergeContacts) {
-            if (deleteAccountsNoContacts.containsKey(mergeContact.AccountId)) {
-                Account updateAccount = deleteAccountsNoContacts.remove(mergeContact.AccountId);
-                updateAccount.BillingStreet = '';
-                updateAccount.BillingCity = '';
-                updateAccount.BillingState = '';
-                updateAccount.BillingPostalCode = '';
-                updateAccount.ShippingStreet = '';
-                updateAccount.ShippingCity = '';
-                updateAccount.ShippingState = '';
-                updateAccount.ShippingPostalCode = '';
-                updateAccount.npe01__One2OneContact__c = mergeContact.Id;
-                updateAccount.Phone = mergeContact.Phone;
+        Map<Id, Contact> accountsWithContacts = new Map<Id, Contact>();
+        for(Contact contact : [
+            SELECT AccountId, Id, Phone
+            FROM Contact
+            WHERE AccountId in :mergeAccounts]) {
+                accountsWithContacts.put(contact.AccountId, contact);
+        }
 
-                updateAccountsClearInfo.add(
-                    updateAccount);
+        List<Account> deleteAccountsNoContacts = new List<Account>();
+        for (Account mergeAccount :mergeAccounts) {
+            if (!accountsWithContacts.containsKey(mergeAccount.Id)) {
+                deleteAccountsNoContacts.add(mergeAccount);
             }
         }
 
-        if (!updateAccountsClearInfo.isEmpty()) {
-            update updateAccountsClearInfo;
-        }
-
-        if (!deleteAccountsNoContacts.values().isEmpty()) {
-            delete deleteAccountsNoContacts.values();
+        if (!deleteAccountsNoContacts.isEmpty()) {
+            delete deleteAccountsNoContacts;
         }
     }
 

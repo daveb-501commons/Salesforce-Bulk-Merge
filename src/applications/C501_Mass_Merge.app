@@ -9,7 +9,6 @@
     <navType>Standard</navType>
     <tabs>Mass_Merge_Accounts</tabs>
     <tabs>standard-Account</tabs>
-    <tabs>npsp__Contact_Merge</tabs>
     <tabs>standard-Contact</tabs>
     <uiType>Lightning</uiType>
     <utilityBar>Mass_Merge_UtilityBar</utilityBar>
