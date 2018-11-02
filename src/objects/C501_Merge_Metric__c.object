@@ -49,9 +49,65 @@
     <enableFeeds>false</enableFeeds>
     <enableHistory>false</enableHistory>
     <enableReports>false</enableReports>
-    <enableSearch>false</enableSearch>
+    <enableSearch>true</enableSearch>
     <enableSharing>true</enableSharing>
     <enableStreamingApi>true</enableStreamingApi>
+    <fields>
+        <fullName>AutoMerge_Percentage__c</fullName>
+        <externalId>false</externalId>
+        <label>AutoMerge Percentage</label>
+        <precision>18</precision>
+        <required>false</required>
+        <scale>0</scale>
+        <trackTrending>false</trackTrending>
+        <type>Percent</type>
+    </fields>
+    <fields>
+        <fullName>AutoMerge_Programs__c</fullName>
+        <externalId>false</externalId>
+        <label>AutoMerge Programs</label>
+        <required>false</required>
+        <trackTrending>false</trackTrending>
+        <type>MultiselectPicklist</type>
+        <valueSet>
+            <restricted>true</restricted>
+            <valueSetName>C501_Intake_Programs</valueSetName>
+        </valueSet>
+        <visibleLines>4</visibleLines>
+    </fields>
+    <fields>
+        <fullName>Confidence__c</fullName>
+        <description>Confidence percentage for potential merge candidates found by this rule.</description>
+        <externalId>false</externalId>
+        <label>Confidence</label>
+        <precision>18</precision>
+        <required>false</required>
+        <scale>0</scale>
+        <trackTrending>false</trackTrending>
+        <type>Percent</type>
+    </fields>
+    <fields>
+        <fullName>Enable__c</fullName>
+        <defaultValue>false</defaultValue>
+        <externalId>false</externalId>
+        <label>Enable</label>
+        <trackTrending>false</trackTrending>
+        <type>Checkbox</type>
+    </fields>
+    <fields>
+        <fullName>Enabled_Programs__c</fullName>
+        <description>Which Programs are enabled for the rule to run to create potential merge candidates.</description>
+        <externalId>false</externalId>
+        <label>Enabled Programs</label>
+        <required>false</required>
+        <trackTrending>false</trackTrending>
+        <type>MultiselectPicklist</type>
+        <valueSet>
+            <restricted>true</restricted>
+            <valueSetName>C501_Intake_Programs</valueSetName>
+        </valueSet>
+        <visibleLines>4</visibleLines>
+    </fields>
     <fields>
         <fullName>Total_Ignore__c</fullName>
         <externalId>false</externalId>
@@ -92,6 +148,18 @@
         <type>Summary</type>
     </fields>
     <label>Merge Metric</label>
+    <listViews>
+        <fullName>All</fullName>
+        <columns>NAME</columns>
+        <columns>Total_Unassigned__c</columns>
+        <columns>Enable__c</columns>
+        <columns>Enabled_Programs__c</columns>
+        <columns>Confidence__c</columns>
+        <columns>AutoMerge_Percentage__c</columns>
+        <columns>AutoMerge_Programs__c</columns>
+        <filterScope>Everything</filterScope>
+        <label>All</label>
+    </listViews>
     <nameField>
         <label>Merge Metric Name</label>
         <type>Text</type>
