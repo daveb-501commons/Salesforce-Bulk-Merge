@@ -93,6 +93,7 @@
     </types>
     <types>
         <members>C501_Merge_Metric__c</members>
+        <members>Mass_Merge</members>
         <members>Mass_Merge_Accounts</members>
         <name>CustomTab</name>
     </types>
