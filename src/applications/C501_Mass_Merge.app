@@ -7,9 +7,9 @@
     <formFactors>Large</formFactors>
     <label>Mass Merge</label>
     <navType>Standard</navType>
-    <tabs>Mass_Merge_Accounts</tabs>
     <tabs>standard-Account</tabs>
     <tabs>standard-Contact</tabs>
     <tabs>C501_Merge_Metric__c</tabs>
+    <tabs>C501_Account_Merge__c</tabs>
     <uiType>Lightning</uiType>
 </CustomApplication>
