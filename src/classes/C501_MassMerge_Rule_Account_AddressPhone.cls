@@ -32,7 +32,7 @@ global class C501_MassMerge_Rule_Account_AddressPhone implements Schedulable {
             Group By BillingStreet, Phone
             Having Count(Id) > 1
             Order By Count(Id) DESC
-            LIMIT 10];
+            LIMIT 200];
 
 		AggregateResult[] allAggregatedAccountsAdditional = [
             SELECT Count(Id), ShippingStreet, Phone, MAX(Id), MIN(Id)
@@ -41,7 +41,7 @@ global class C501_MassMerge_Rule_Account_AddressPhone implements Schedulable {
             Group By ShippingStreet, Phone
             Having Count(Id) > 1
             Order By Count(Id) DESC
-            LIMIT 10];
+            LIMIT 200];
 
         allAggregatedAccounts.addAll(allAggregatedAccountsAdditional);
 

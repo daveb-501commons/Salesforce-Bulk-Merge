@@ -32,7 +32,7 @@ global class C501_MassMerge_Rule_Contact_PartialSSDOB implements Schedulable {
             Group By C501_Partial_Social_Security_Id__c, Birthdate
             Having Count(Id) > 1
             Order By Count(Id) DESC
-            LIMIT 10];
+            LIMIT 200];
 
         Map<String, C501_Account_Merge__c> mergeAccounts = new Map<String, C501_Account_Merge__c>();
         String maxId;

@@ -2,11 +2,12 @@
 // Run Code from Developer Console
 //  1) Debug -> Open Execute Anonymous Window
 //  2) paste code
-//      C501_MassMerge_Rule_Contact_Phone schedule = new C501_MassMerge_Rule_Contact_Phone();schedule.execute(null);
+//      C501_MassMerge_Rule_Contact_PartNameDOB schedule = new C501_MassMerge_Rule_Contact_PartNameDOB();
+//      schedule.execute(null);
 //  3) click Execute
 //
 
-global class C501_MassMerge_Rule_Contact_Phone implements Schedulable {
+global class C501_MassMerge_Rule_Contact_PartNameDOB implements Schedulable {
 
     global void execute(SchedulableContext SC) {
 
@@ -15,20 +16,20 @@ global class C501_MassMerge_Rule_Contact_Phone implements Schedulable {
 		//
 
         // Get Merge Metric
-        List<C501_Merge_Metric__c> mergeMetric = [SELECT Id, Total_Merge__c FROM C501_Merge_Metric__c WHERE Name = 'Contact_Phone'];
+        List<C501_Merge_Metric__c> mergeMetric = [SELECT Id, Total_Merge__c FROM C501_Merge_Metric__c WHERE Name = 'Contact_PartNameDOB'];
         if (mergeMetric.isEmpty()) {
             mergeMetric.add( new C501_Merge_Metric__c (
-                Name = 'Contact_Phone'
+                Name = 'Contact_PartNameDOB'
             ));
 
             insert mergeMetric;
         }
 
 		AggregateResult[] allAggregatedAccounts = [
-            SELECT Count(Id), Phone, MAX(AccountId), MIN(AccountId)
+            SELECT Count(Id), Birthdate, C501_FirstName_Initial__c, LastName, MAX(AccountId), MIN(AccountId)
             FROM Contact
-            Where Phone <> '' and Phone <> '()'
-            Group By Phone
+            Where C501_FirstName_Initial__c <> '' and LastName <> '' and Birthdate <> null
+            Group By C501_FirstName_Initial__c, LastName, Birthdate
             Having Count(Id) > 1
             Order By Count(Id) DESC
             LIMIT 200];
@@ -43,7 +44,7 @@ global class C501_MassMerge_Rule_Contact_Phone implements Schedulable {
             uniqueId = String.valueOf(maxId) + String.valueOf(maxId);
             mergeAccounts.put(uniqueId, new C501_Account_Merge__c(
                 Unique_Id__c = uniqueId,
-                Merge_Confidence__c = 80.0,
+                Merge_Confidence__c = 90.0,
                 Account__c = minId,
                 Merge_Target_Account__c = maxId,
                 Merge_Metric__c = mergeMetric[0].Id

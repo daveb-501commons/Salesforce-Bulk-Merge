@@ -32,7 +32,7 @@ global class C501_MassMerge_Rule_Account_Phone implements Schedulable {
             Group By Phone
             Having Count(Id) > 1
             Order By Count(Id) DESC
-            LIMIT 10];
+            LIMIT 200];
 
         Map<String, C501_Account_Merge__c> mergeAccounts = new Map<String, C501_Account_Merge__c>();
         String maxId;
