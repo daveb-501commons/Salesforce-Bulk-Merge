@@ -12,5 +12,4 @@
     <tabs>standard-Contact</tabs>
     <tabs>C501_Merge_Metric__c</tabs>
     <uiType>Lightning</uiType>
-    <utilityBar>Mass_Merge_UtilityBar</utilityBar>
 </CustomApplication>

@@ -40,31 +40,44 @@ global with sharing class C501_MassMerge_SharedCode {
         list<SelectOption> listSO = new list<SelectOption>();
         listSO.add(new SelectOption('', ''));
 
-        for (Account account : [
-            select Name, Id from Account where C501_Merge_Targets__c > 0 order by Name asc
-            limit 999]) {
-
-                for (C501_Account_Merge__c mergeAccount : [
-                    select Account__c from C501_Account_Merge__c
-                    where Account__c = :account.Id
-                        and Merge_Target_Account__c <> :account.Id
-                        and Merge_Confidence__c >= :fromMergeConfidence
-                        and Merge_Confidence__c <= :toMergeConfidence
-                        and Merge_Action__c <> 'Ignore' 
-                    limit 1]) {
-                        if (String.isBlank(programName)) {
-                            listSO.add(new SelectOption(account.Id, account.Name));
-                        }
-                        else {
-                            for (C501_Service_Household__c serviceHousehold : [
-                                select C501_Household__c from C501_Service_Household__c
-                                where C501_Household__c = :account.Id and C501_Program__c = :programName
-                                limit 1]) {
-                                    listSO.add(new SelectOption(account.Id, account.Name));
-                                }
-                        }
-                    }
+        Set<String> accountMerges = new Set<String>();
+        for (AggregateResult result : [
+            select Account__c from C501_Account_Merge__c
+            where Merge_Confidence__c >= :fromMergeConfidence
+                and Merge_Confidence__c <= :toMergeConfidence
+                and Merge_Action__c <> 'Ignore' 
+            group by Account__c
+            limit 200]) {
+                accountMerges.add(result.get('Account__c').toString());
             }
+
+        if (String.isBlank(programName)) {
+            for (Account account : [
+                select Name, Id from Account where C501_Merge_Targets__c > 0 order by Name asc
+                limit 200]) {
+                    if (accountMerges.contains(account.Id)) {
+                        listSO.add(new SelectOption(account.Id, account.Name));
+                    }
+                }
+        }
+        else {
+            Set<String> serviceHouseholds = new Set<String>();
+            for (AggregateResult result : [
+                select C501_Household__c from C501_Service_Household__c
+                where C501_Program__c = :programName
+                group by C501_Household__c
+                limit 200]) {
+                    serviceHouseholds.add(result.get('C501_Household__c').toString());
+                }
+
+            for (Account account : [
+                select Name, Id from Account where C501_Merge_Targets__c > 0 order by Name asc
+                limit 999]) {
+                    if (accountMerges.contains(account.Id) && serviceHouseholds.contains(account.Id)) {
+                        listSO.add(new SelectOption(account.Id, account.Name));
+                    }
+                }
+        }
 
         return listSO;
     }
