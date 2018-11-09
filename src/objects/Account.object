@@ -38,7 +38,7 @@
     <fields>
         <fullName>C501_Billing_Address__c</fullName>
         <externalId>false</externalId>
-        <label>Rule</label>
+        <label>Billing Address</label>
         <length>80</length>
         <required>false</required>
         <trackFeedHistory>false</trackFeedHistory>
@@ -137,7 +137,7 @@
     <fields>
         <fullName>C501_Shipping_Address__c</fullName>
         <externalId>false</externalId>
-        <label>Rule</label>
+        <label>Shipping Address</label>
         <length>80</length>
         <required>false</required>
         <trackFeedHistory>false</trackFeedHistory>

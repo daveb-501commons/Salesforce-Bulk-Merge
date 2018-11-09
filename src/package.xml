@@ -92,9 +92,9 @@
         <name>CustomObject</name>
     </types>
     <types>
+        <members>C501_Account_Merge__c</members>
         <members>C501_Merge_Metric__c</members>
         <members>Mass_Merge</members>
-        <members>C501_Account_Merge__c</members>
         <name>CustomTab</name>
     </types>
     <types>
