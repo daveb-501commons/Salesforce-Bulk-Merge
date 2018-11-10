@@ -31,8 +31,7 @@ global class C501_MassMerge_Rule_Contact_PartNameDOB implements Schedulable {
             Where C501_FirstName_Initial__c <> '' and LastName <> '' and Birthdate <> null
             Group By C501_FirstName_Initial__c, LastName, Birthdate
             Having Count(Id) > 1
-            Order By Count(Id) DESC
-            LIMIT 200];
+            Order By Count(Id) DESC];
 
         Map<String, C501_Account_Merge__c> mergeAccounts = new Map<String, C501_Account_Merge__c>();
         String maxId;
