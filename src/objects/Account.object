@@ -38,10 +38,10 @@
     <fields>
         <fullName>C501_Billing_Address__c</fullName>
         <externalId>false</externalId>
+        <formula>BillingStreet + &apos;, &apos; + BillingCity + &apos; &apos; + BillingState + &apos; &apos; + BillingPostalCode</formula>
+        <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
         <label>Billing Address</label>
-        <length>80</length>
         <required>false</required>
-        <trackFeedHistory>false</trackFeedHistory>
         <trackHistory>false</trackHistory>
         <type>Text</type>
         <unique>false</unique>
@@ -137,10 +137,10 @@
     <fields>
         <fullName>C501_Shipping_Address__c</fullName>
         <externalId>false</externalId>
+        <formula>ShippingStreet + &apos;, &apos; + ShippingCity + &apos; &apos; + ShippingState + &apos; &apos; + ShippingPostalCode</formula>
+        <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
         <label>Shipping Address</label>
-        <length>80</length>
         <required>false</required>
-        <trackFeedHistory>false</trackFeedHistory>
         <trackHistory>false</trackHistory>
         <type>Text</type>
         <unique>false</unique>
