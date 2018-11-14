@@ -437,15 +437,29 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
                 // Get related Service Households per Account
                 C501_Service_Household__c controllingServiceHousehold = null;
                 Id masterAccountId = null;
+                C501_Service_Household__c controllingServiceHouseholdNotActive = null;
+                Id masterAccountIdNotActive = null;
                 Map<Id, List<Id>> relatedServiceHouseholds = new Map<Id, List<Id>>();
                 for(C501_Service_Household__c relatedServiceHousehold : [
-                    SELECT Id, C501_Household__c, C501_Start_Date__c
+                    SELECT Id, C501_Household__c, C501_Start_Date__c, C501_IsActive__c
                     FROM C501_Service_Household__c
                     WHERE C501_Household__c in :listAccountsMerge]) {
-                        if (controllingServiceHousehold == null || controllingServiceHousehold.C501_Start_Date__c < relatedServiceHousehold.C501_Start_Date__c) {
-                            masterAccountId = relatedServiceHousehold.C501_Household__c;
-                            controllingServiceHousehold = relatedServiceHousehold;
+
+                        if (relatedServiceHousehold.C501_IsActive__c) {
+                            // Check for most recent active Service Household
+                            if (controllingServiceHousehold == null || controllingServiceHousehold.C501_Start_Date__c < relatedServiceHousehold.C501_Start_Date__c) {
+                                masterAccountId = relatedServiceHousehold.C501_Household__c;
+                                controllingServiceHousehold = relatedServiceHousehold;
+                            }
                         }
+                        else {
+                            // Check for most recent not active Service Household
+                            if (controllingServiceHouseholdNotActive == null || controllingServiceHouseholdNotActive.C501_Start_Date__c < relatedServiceHousehold.C501_Start_Date__c) {
+                                masterAccountIdNotActive = relatedServiceHousehold.C501_Household__c;
+                                controllingServiceHouseholdNotActive = relatedServiceHousehold;
+                            }
+                        }
+
                         if (relatedServiceHouseholds.containsKey(relatedServiceHousehold.C501_Household__c)) {
                             List<Id> services = relatedServiceHouseholds.remove(relatedServiceHousehold.C501_Household__c);
                             services.add(relatedServiceHousehold.Id);
@@ -454,6 +468,11 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
                         else {
                             relatedServiceHouseholds.put(relatedServiceHousehold.C501_Household__c, new List<Id> {relatedServiceHousehold.Id});
                         }
+                }
+
+                if (masterAccountId == null && masterAccountIdNotActive != null) {
+                    masterAccountId = masterAccountIdNotActive;
+                    controllingServiceHousehold = controllingServiceHouseholdNotActive;
                 }
 
                 if (masterAccountId == null) {

@@ -37,7 +37,8 @@ global with sharing class C501_MassMerge_SharedCode {
             + ' fromMergeConfidence: ' + fromMergeConfidence.toPlainString()
             + ' toMergeConfidence: ' + toMergeConfidence.toPlainString());
 
-        list<SelectOption> listSO = new list<SelectOption>();
+        Set<String> setSOUnique = new Set<String>();
+        List<SelectOption> listSO = new List<SelectOption>();
         listSO.add(new SelectOption('', ''));
 
         if (String.isBlank(programName)) {
@@ -61,12 +62,34 @@ global with sharing class C501_MassMerge_SharedCode {
                     and Account__c in (SELECT C501_Household__c FROM C501_Service_Household__c WHERE C501_Program__c = :programName) 
                 group by Account__c, Account__r.Name
                 limit 999]) {
-                    listSO.add(new SelectOption(result.get('Account__c').toString(),
-                        result.get('Name').toString()));
+                    if (!setSOUnique.contains(result.get('Account__c').toString())) {
+                        setSOUnique.add(result.get('Account__c').toString());
+                        listSO.add(new SelectOption(result.get('Account__c').toString(),
+                            result.get('Name').toString()));
+                    }
+                }
+
+            // Query based on Merge_Target_Account__c seperately because nested semi-join not allowed in SOQL
+            for (AggregateResult result : [
+                select Merge_Target_Account__c, Merge_Target_Account__r.Name, Account__c from C501_Account_Merge__c
+                where Merge_Confidence__c >= :fromMergeConfidence
+                    and Merge_Confidence__c <= :toMergeConfidence
+                    and Merge_Action__c <> 'Ignore'
+                    and Merge_Target_Account__c in (SELECT C501_Household__c FROM C501_Service_Household__c WHERE C501_Program__c = :programName)
+                group by Merge_Target_Account__c, Merge_Target_Account__r.Name, Account__c
+                limit 999]) {
+                    if (!setSOUnique.contains(result.get('Account__c').toString())) {
+                        setSOUnique.add(result.get('Account__c').toString());
+                        listSO.add(new SelectOption(result.get('Account__c').toString(),
+                            result.get('Name').toString()));
+                    }
                 }
         }
 
-        return listSO;
+        List<SelectOption> listSOSorted = new List<SelectOption>();
+        listSOSorted = selectOptionSortByLabel(listSO);
+
+        return listSOSorted;
     }
 
     /******************************************************************************************************
@@ -89,5 +112,65 @@ global with sharing class C501_MassMerge_SharedCode {
             }
         }
         return plainNamespace;
+    }
+
+    /*
+        @Param:List of selectOption to be sort.
+        @Return: Sorted list of selectOptions by Label
+    */
+    public static list<selectOption> selectOptionSortByLabel(list<selectOption>
+                                                            selectOptionsToSort) {
+        if(selectOptionsToSort == null || selectOptionsToSort.size() <= 1){
+            return selectOptionsToSort;
+        }
+        List<SelectOption> lessSelectOption = new List<SelectOption>();
+        List<SelectOption> greaterSelectOption = new List<SelectOption>();
+        integer pivot = selectOptionsToSort.size() / 2;
+        
+        //save the pivot and remove it from the selectOption list
+        SelectOption pivotValue = selectOptionsToSort[pivot];
+        selectOptionsToSort.remove(pivot);
+        for(selectOption SO : selectOptionsToSort){
+            if(SO.getLabel() <= pivotValue.getLabel()){
+                lessSelectOption.add(SO);
+            }else if(SO.getLabel() > pivotValue.getLabel()){
+                greaterSelectOption.add(SO);   
+            }
+        }
+        list<selectOption> sortedSelectOptions = new list<selectOption>(); 
+        sortedSelectOptions.addAll(selectOptionSortByLabel(lessSelectOption));
+        sortedSelectOptions.add(pivotValue);
+        sortedSelectOptions.addAll(selectOptionSortByLabel(greaterSelectOption));
+        return SortedSelectOptions;
+    }
+
+    /*
+        @Param:List of selectOption to be sort.
+        @Return: Sorted list of selectOptions by Value
+    */
+    public static list<selectOption> selectOptionSortByValue(list<selectOption>
+                                                            selectOptionsToSort){
+        if(selectOptionsToSort == null || selectOptionsToSort.size() <= 1){
+            return selectOptionsToSort;
+        }       
+        List<SelectOption> lessSelectOption = new List<SelectOption>();
+        List<SelectOption> greaterSelectOption = new List<SelectOption>();
+        integer pivot = selectOptionsToSort.size() / 2;
+         
+        //save the pivot and remove it from the selectOption list
+        SelectOption pivotValue = selectOptionsToSort[pivot]; 
+        selectOptionsToSort.remove(pivot);
+        for(selectOption SO : selectOptionsToSort){
+            if(SO.getValue() <= pivotValue.getValue()){
+                lessSelectOption.add(SO);
+            }else if(SO.getValue() > pivotValue.getValue()){
+                greaterSelectOption.add(SO);   
+            }
+        }
+        list<selectOption> SortedSelectOptions = new list<selectOption>(); 
+        SortedSelectOptions.addAll(selectOptionSortByValue(lessSelectOption));
+        SortedSelectOptions.add(pivotValue);
+        SortedSelectOptions.addAll(selectOptionSortByValue(greaterSelectOption));
+        return SortedSelectOptions;
     }
 }
