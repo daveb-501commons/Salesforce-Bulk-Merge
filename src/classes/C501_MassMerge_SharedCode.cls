@@ -79,6 +79,9 @@ global with sharing class C501_MassMerge_SharedCode {
                 group by Merge_Target_Account__c, Merge_Target_Account__r.Name, Account__c
                 limit 999]) {
                     if (!setSOUnique.contains(result.get('Account__c').toString())) {
+                        if (setSOUnique.size() >= 999 || listSO.size() >= 999) {
+                            break;
+                        }
                         setSOUnique.add(result.get('Account__c').toString());
                         listSO.add(new SelectOption(result.get('Account__c').toString(),
                             result.get('Name').toString()));
