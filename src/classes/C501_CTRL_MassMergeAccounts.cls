@@ -317,7 +317,8 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
                 // Match based on Birthdate and Firstname (in case of Twins).  Don't match Last Name in case of name change
                 if (masterContact.Birthdate == mergeContact.Birthdate
                     && masterContact.FirstName == mergeContact.FirstName
-                    && masterAccountId != mergeContact.AccountId) {
+                    && masterAccountId != mergeContact.AccountId
+                    && (masterContact.C501_Is_In_Household__c || !masterContact.C501_Is_In_Household__c && !mergeContact.C501_Is_In_Household__c)) {
                     
                     // Reassign any service contacts
                     for (C501_Service_Contact__c serviceContact :mergeServiceContacts) {
