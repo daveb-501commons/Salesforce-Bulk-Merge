@@ -16,7 +16,7 @@ global class C501_MM_Rule_Contact_NameDOBService implements Schedulable {
 		//
 
         // Get Merge Metric
-        List<C501_Merge_Metric__c> mergeMetrics = [SELECT Id, Name, Confidence__c, Total_Merge__c FROM C501_Merge_Metric__c WHERE Name = 'Contact_NameDOBService'];
+        List<C501_Merge_Metric__c> mergeMetrics = [SELECT Id, Name, Confidence__c, Enable__c, Total_Merge__c, AutoMerge_Percentage__c FROM C501_Merge_Metric__c WHERE Name = 'Contact_NameDOBService'];
         if (mergeMetrics.isEmpty()) {
             mergeMetrics.add( new C501_Merge_Metric__c (
                 Name = 'Contact_NameDOBService',
@@ -24,6 +24,10 @@ global class C501_MM_Rule_Contact_NameDOBService implements Schedulable {
             ));
 
             insert mergeMetrics;
+        }
+
+        if (!mergeMetrics[0].Enable__c) {
+            return;
         }
 
 		AggregateResult[] allAggregatedByContacts = [
@@ -64,6 +68,7 @@ global class C501_MM_Rule_Contact_NameDOBService implements Schedulable {
                 system.debug('*****C501_MM_Rule_Contact_NameDOBService::execute ByContacts Found - maxId: ' + maxId
                     + ' minId: ' + minId + ' UniqueId: ' + uniqueId + ' Confidence: ' + mergeMetrics[0].Confidence__c
                     + 'MetricId: ' + mergeMetrics[0].Id);
+
                 uniqueId = mergeMetrics[0].Name + String.valueOf(minId) + String.valueOf(maxId);
                 mergeAccounts.put(uniqueId, new C501_Account_Merge__c(
                     Unique_Id__c = uniqueId,
@@ -83,5 +88,44 @@ global class C501_MM_Rule_Contact_NameDOBService implements Schedulable {
 
             // TBD - Look for anything other than Duplicate Id Error on Unique_Id__c which is expected
 		}
+
+        C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
+
+        // Check to AutoMerge
+        if (mergeMetrics[0].AutoMerge_Percentage__c > 0.0) {
+
+            // Handle up to 5 merges because each Merge has 10 SOQL calls and max SOQL limit is 100.  Need to call in a bulk process
+            Integer mergesRemaining = 5;
+
+            for (C501_Account_Merge__c mergeAccount :mergeAccounts.values()) {
+
+                if (mergesRemaining-- <= 0) {
+                    break;
+                }
+
+                try {
+                    c501MassMerge_SharedCode.AccountsMerge( new List<Account> {
+                        new Account(
+                            Id = mergeAccount.Account__c,
+                            C501_Merge_Action__c = 'Merge',
+                            C501_Merge_Confidence__c = mergeMetrics[0].Confidence__c,
+                            C501_Merge_Target__c = mergeAccount.Merge_Target_Account__c,
+                            C501_Merge_Metric_Name__c = mergeMetrics[0].Name
+                        ),
+                        new Account(
+                            Id = mergeAccount.Merge_Target_Account__c,
+                            C501_Merge_Action__c = 'Merge',
+                            C501_Merge_Confidence__c = mergeMetrics[0].Confidence__c,
+                            C501_Merge_Target__c = mergeAccount.Account__c,
+                            C501_Merge_Metric_Name__c = mergeMetrics[0].Name
+                        )
+                    } );
+                } catch (Exception e) {
+                    // NoOp for now since Sandbox has partial data
+                    system.debug('***** Account__c: ' + mergeAccount.Account__c + ' Merge_Target_Account__c: ' + mergeAccount.Merge_Target_Account__c);
+                    system.debug('General Exception: ' + String.valueOf(e) + '\n\n' + e.getStackTraceString());
+                }
+            }
+        }
    }
 }
