@@ -2,10 +2,84 @@
 // Run Code from Developer Console
 //  1) Debug -> Open Execute Anonymous Window
 //  2) paste code
-//      C501_MM_Rule_Contact_NameDOBService schedule = new C501_MM_Rule_Contact_NameDOBService();
-//      schedule.execute(null);
+/*
+    C501_MM_Rule_Contact_NameDOBService schedule = new C501_MM_Rule_Contact_NameDOBService();
+    schedule.execute(null);
+*/
 //  3) click Execute
 //
+// Abort scheduled jobs
+/*
+    List<CronJobDetail> scheduledJobs = [SELECT Id FROM CronJobDetail WHERE Name like 'Contact_NameDOBService_%'];
+    for (CronJobDetail scheduledJob :scheduledJobs) {
+        Id jobId = [SELECT Id from CronTrigger WHERE CronJobDetailId = :scheduledJob.Id].Id;
+        System.abortJob(jobId);
+    }
+*/
+//
+// Schedule Code from Developer Console
+/*
+    system.schedule('Contact_NameDOBService_0', '0 0 * * * ?', new C501_MM_Rule_Contact_NameDOBService());
+    system.schedule('Contact_NameDOBService_1', '0 1 * * * ?', new C501_MM_Rule_Contact_NameDOBService());
+    system.schedule('Contact_NameDOBService_2', '0 2 * * * ?', new C501_MM_Rule_Contact_NameDOBService());
+    system.schedule('Contact_NameDOBService_3', '0 3 * * * ?', new C501_MM_Rule_Contact_NameDOBService());
+    system.schedule('Contact_NameDOBService_4', '0 4 * * * ?', new C501_MM_Rule_Contact_NameDOBService());
+    system.schedule('Contact_NameDOBService_5', '0 5 * * * ?', new C501_MM_Rule_Contact_NameDOBService());
+    system.schedule('Contact_NameDOBService_6', '0 6 * * * ?', new C501_MM_Rule_Contact_NameDOBService());
+    system.schedule('Contact_NameDOBService_7', '0 7 * * * ?', new C501_MM_Rule_Contact_NameDOBService());
+    system.schedule('Contact_NameDOBService_8', '0 8 * * * ?', new C501_MM_Rule_Contact_NameDOBService());
+    system.schedule('Contact_NameDOBService_9', '0 9 * * * ?', new C501_MM_Rule_Contact_NameDOBService());
+    system.schedule('Contact_NameDOBService_10', '0 10 * * * ?', new C501_MM_Rule_Contact_NameDOBService());
+    system.schedule('Contact_NameDOBService_11', '0 11 * * * ?', new C501_MM_Rule_Contact_NameDOBService());
+    system.schedule('Contact_NameDOBService_12', '0 12 * * * ?', new C501_MM_Rule_Contact_NameDOBService());
+    system.schedule('Contact_NameDOBService_13', '0 13 * * * ?', new C501_MM_Rule_Contact_NameDOBService());
+    system.schedule('Contact_NameDOBService_14', '0 14 * * * ?', new C501_MM_Rule_Contact_NameDOBService());
+    system.schedule('Contact_NameDOBService_15', '0 15 * * * ?', new C501_MM_Rule_Contact_NameDOBService());
+    system.schedule('Contact_NameDOBService_16', '0 16 * * * ?', new C501_MM_Rule_Contact_NameDOBService());
+    system.schedule('Contact_NameDOBService_17', '0 17 * * * ?', new C501_MM_Rule_Contact_NameDOBService());
+    system.schedule('Contact_NameDOBService_18', '0 18 * * * ?', new C501_MM_Rule_Contact_NameDOBService());
+    system.schedule('Contact_NameDOBService_19', '0 19 * * * ?', new C501_MM_Rule_Contact_NameDOBService());
+    system.schedule('Contact_NameDOBService_20', '0 20 * * * ?', new C501_MM_Rule_Contact_NameDOBService());
+    system.schedule('Contact_NameDOBService_21', '0 21 * * * ?', new C501_MM_Rule_Contact_NameDOBService());
+    system.schedule('Contact_NameDOBService_22', '0 22 * * * ?', new C501_MM_Rule_Contact_NameDOBService());
+    system.schedule('Contact_NameDOBService_23', '0 23 * * * ?', new C501_MM_Rule_Contact_NameDOBService());
+    system.schedule('Contact_NameDOBService_24', '0 24 * * * ?', new C501_MM_Rule_Contact_NameDOBService());
+    system.schedule('Contact_NameDOBService_25', '0 25 * * * ?', new C501_MM_Rule_Contact_NameDOBService());
+    system.schedule('Contact_NameDOBService_26', '0 26 * * * ?', new C501_MM_Rule_Contact_NameDOBService());
+    system.schedule('Contact_NameDOBService_27', '0 27 * * * ?', new C501_MM_Rule_Contact_NameDOBService());
+    system.schedule('Contact_NameDOBService_28', '0 28 * * * ?', new C501_MM_Rule_Contact_NameDOBService());
+    system.schedule('Contact_NameDOBService_29', '0 29 * * * ?', new C501_MM_Rule_Contact_NameDOBService());
+    system.schedule('Contact_NameDOBService_30', '0 30 * * * ?', new C501_MM_Rule_Contact_NameDOBService());
+    system.schedule('Contact_NameDOBService_31', '0 31 * * * ?', new C501_MM_Rule_Contact_NameDOBService());
+    system.schedule('Contact_NameDOBService_32', '0 32 * * * ?', new C501_MM_Rule_Contact_NameDOBService());
+    system.schedule('Contact_NameDOBService_33', '0 33 * * * ?', new C501_MM_Rule_Contact_NameDOBService());
+    system.schedule('Contact_NameDOBService_34', '0 34 * * * ?', new C501_MM_Rule_Contact_NameDOBService());
+    system.schedule('Contact_NameDOBService_35', '0 35 * * * ?', new C501_MM_Rule_Contact_NameDOBService());
+    system.schedule('Contact_NameDOBService_36', '0 36 * * * ?', new C501_MM_Rule_Contact_NameDOBService());
+    system.schedule('Contact_NameDOBService_37', '0 37 * * * ?', new C501_MM_Rule_Contact_NameDOBService());
+    system.schedule('Contact_NameDOBService_38', '0 38 * * * ?', new C501_MM_Rule_Contact_NameDOBService());
+    system.schedule('Contact_NameDOBService_39', '0 39 * * * ?', new C501_MM_Rule_Contact_NameDOBService());
+    system.schedule('Contact_NameDOBService_40', '0 40 * * * ?', new C501_MM_Rule_Contact_NameDOBService());
+    system.schedule('Contact_NameDOBService_41', '0 41 * * * ?', new C501_MM_Rule_Contact_NameDOBService());
+    system.schedule('Contact_NameDOBService_42', '0 42 * * * ?', new C501_MM_Rule_Contact_NameDOBService());
+    system.schedule('Contact_NameDOBService_43', '0 43 * * * ?', new C501_MM_Rule_Contact_NameDOBService());
+    system.schedule('Contact_NameDOBService_44', '0 44 * * * ?', new C501_MM_Rule_Contact_NameDOBService());
+    system.schedule('Contact_NameDOBService_45', '0 45 * * * ?', new C501_MM_Rule_Contact_NameDOBService());
+    system.schedule('Contact_NameDOBService_46', '0 46 * * * ?', new C501_MM_Rule_Contact_NameDOBService());
+    system.schedule('Contact_NameDOBService_47', '0 47 * * * ?', new C501_MM_Rule_Contact_NameDOBService());
+    system.schedule('Contact_NameDOBService_48', '0 48 * * * ?', new C501_MM_Rule_Contact_NameDOBService());
+    system.schedule('Contact_NameDOBService_49', '0 49 * * * ?', new C501_MM_Rule_Contact_NameDOBService());
+    system.schedule('Contact_NameDOBService_50', '0 50 * * * ?', new C501_MM_Rule_Contact_NameDOBService());
+    system.schedule('Contact_NameDOBService_51', '0 51 * * * ?', new C501_MM_Rule_Contact_NameDOBService());
+    system.schedule('Contact_NameDOBService_52', '0 52 * * * ?', new C501_MM_Rule_Contact_NameDOBService());
+    system.schedule('Contact_NameDOBService_53', '0 53 * * * ?', new C501_MM_Rule_Contact_NameDOBService());
+    system.schedule('Contact_NameDOBService_54', '0 54 * * * ?', new C501_MM_Rule_Contact_NameDOBService());
+    system.schedule('Contact_NameDOBService_55', '0 55 * * * ?', new C501_MM_Rule_Contact_NameDOBService());
+    system.schedule('Contact_NameDOBService_56', '0 56 * * * ?', new C501_MM_Rule_Contact_NameDOBService());
+    system.schedule('Contact_NameDOBService_57', '0 57 * * * ?', new C501_MM_Rule_Contact_NameDOBService());
+    system.schedule('Contact_NameDOBService_58', '0 58 * * * ?', new C501_MM_Rule_Contact_NameDOBService());
+    system.schedule('Contact_NameDOBService_59', '0 59 * * * ?', new C501_MM_Rule_Contact_NameDOBService());
+*/
 
 global class C501_MM_Rule_Contact_NameDOBService implements Schedulable {
 
@@ -31,18 +105,22 @@ global class C501_MM_Rule_Contact_NameDOBService implements Schedulable {
         }
 
 		AggregateResult[] allAggregatedByContacts = [
-            SELECT Count(Id), Birthdate, C501_FirstName_Initial__c, LastName, MAX(AccountId)MaxAccountId, MIN(AccountId)MinAccountId
+            SELECT Count(Id), Birthdate, C501_Gender__c, C501_FirstName_Initial__c, LastName, MAX(AccountId)MaxAccountId, MIN(AccountId)MinAccountId
             FROM Contact
             Where C501_FirstName_Initial__c <> '' and LastName <> '' and Birthdate <> null
-            Group By C501_FirstName_Initial__c, LastName, Birthdate
+            Group By C501_FirstName_Initial__c, LastName, Birthdate, C501_Gender__c
             Having Count(Id) > 1
             Order By Count(Id) DESC];
 
 		AggregateResult[] allAggregatedByServiceContacts = [
-            SELECT Count(Id), C501_Birthdate__c, C501_FirstName_Initial__c, C501_Last_Name__c, C501_Service_Household_Id__r.C501_Start_Date__c, MAX(C501_Service_Household_Id__r.C501_Household__c)MaxAccountId, MIN(C501_Service_Household_Id__r.C501_Household__c)MinAccountId
+            SELECT Count(Id), C501_Birthdate__c, Gender__c, C501_FirstName_Initial__c, C501_Last_Name__c, C501_Service_Household_Id__r.C501_Start_Date__c, MAX(C501_Service_Household_Id__r.C501_Household__c)MaxAccountId, MIN(C501_Service_Household_Id__r.C501_Household__c)MinAccountId
             FROM C501_Service_Contact__c
-            Where C501_FirstName_Initial__c <> '' and C501_Last_Name__c <> '' and C501_Birthdate__c <> null and C501_Service_Household_Id__r.C501_Start_Date__c <> null
-            Group By C501_FirstName_Initial__c, C501_Last_Name__c, C501_Birthdate__c, C501_Service_Household_Id__r.C501_Start_Date__c
+            Where C501_FirstName_Initial__c <> ''
+                and C501_Last_Name__c <> ''
+                and C501_Birthdate__c <> null
+                and C501_Service_Household_Id__r.C501_Start_Date__c <> null
+                and (NOT C501_Service_Household_Id__r.Program like '%Change Request%')
+            Group By C501_FirstName_Initial__c, C501_Last_Name__c, C501_Birthdate__c, Gender__c, C501_Service_Household_Id__r.C501_Start_Date__c
             Having Count(Id) > 1
             Order By Count(Id) DESC];
 
@@ -103,6 +181,8 @@ global class C501_MM_Rule_Contact_NameDOBService implements Schedulable {
                     break;
                 }
 
+                system.debug('***** AutoMerge - Account__c: ' + mergeAccount.Account__c + ' Merge_Target_Account__c: ' + mergeAccount.Merge_Target_Account__c);
+
                 try {
                     c501MassMerge_SharedCode.AccountsMerge( new List<Account> {
                         new Account(
@@ -125,6 +205,8 @@ global class C501_MM_Rule_Contact_NameDOBService implements Schedulable {
                     system.debug('***** Account__c: ' + mergeAccount.Account__c + ' Merge_Target_Account__c: ' + mergeAccount.Merge_Target_Account__c);
                     system.debug('General Exception: ' + String.valueOf(e) + '\n\n' + e.getStackTraceString());
                 }
+
+                break;
             }
         }
    }
