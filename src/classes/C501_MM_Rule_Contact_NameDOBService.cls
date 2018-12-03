@@ -130,7 +130,6 @@ global class C501_MM_Rule_Contact_NameDOBService implements Schedulable {
         for (AggregateResult result : allAggregatedByServiceContacts)  {
             maxId = result.get('MaxAccountId').toString();
             minId = result.get('MinAccountId').toString();
-            system.debug('*****C501_MM_Rule_Contact_NameDOBService::execute ByServiceContacts - maxId: ' + maxId + ' minId: ' + minId);
             accountsByService.add(maxId);
             accountsByService.add(minId);
         }
@@ -140,14 +139,14 @@ global class C501_MM_Rule_Contact_NameDOBService implements Schedulable {
         for (AggregateResult result : allAggregatedByContacts)  {
             maxId = result.get('MaxAccountId').toString();
             minId = result.get('MinAccountId').toString();
-            system.debug('*****C501_MM_Rule_Contact_NameDOBService::execute ByContacts Check - maxId: ' + maxId + ' minId: ' + minId);
 
-            if (accountsByService.contains(maxId) || accountsByService.contains(minId)) {
+            if (accountsByService.contains(maxId) && accountsByService.contains(minId)) {
                 system.debug('*****C501_MM_Rule_Contact_NameDOBService::execute ByContacts Found - maxId: ' + maxId
                     + ' minId: ' + minId + ' UniqueId: ' + uniqueId + ' Confidence: ' + mergeMetrics[0].Confidence__c
                     + 'MetricId: ' + mergeMetrics[0].Id);
 
                 uniqueId = mergeMetrics[0].Name + String.valueOf(minId) + String.valueOf(maxId);
+
                 mergeAccounts.put(uniqueId, new C501_Account_Merge__c(
                     Unique_Id__c = uniqueId,
                     Merge_Confidence__c = mergeMetrics[0].Confidence__c,
@@ -170,43 +169,50 @@ global class C501_MM_Rule_Contact_NameDOBService implements Schedulable {
         C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
 
         // Check to AutoMerge
+        Integer mergeAutoMergeAttemptsRemaining = 5;            // SOQL Governor limit issue limit merge attempts to 5 because each Merge Attempt is currently 10 SOQL Queries
         if (mergeMetrics[0].AutoMerge_Percentage__c > 0.0) {
 
-            // Handle up to 5 merges because each Merge has 10 SOQL calls and max SOQL limit is 100.  Need to call in a bulk process
-            Integer mergesRemaining = 5;
+            Set<Id> accountsProcessed = new Set<Id>();
+            for (C501_Account_Merge__c mergeCandidate : [
+                SELECT Account__c, Merge_Target_Account__c
+                FROM C501_Account_Merge__c LIMIT 25]) {
 
-            for (C501_Account_Merge__c mergeAccount :mergeAccounts.values()) {
+                    // Check whether account Id merge already attempted
+                    if (accountsProcessed.contains(mergeCandidate.Account__c) || accountsProcessed.contains(mergeCandidate.Merge_Target_Account__c)) {
+                        continue;
+                    }
 
-                if (mergesRemaining-- <= 0) {
-                    break;
-                }
+                    if (mergeAutoMergeAttemptsRemaining-- <= 0) {
+                        break;
+                    }
 
-                system.debug('***** AutoMerge - Account__c: ' + mergeAccount.Account__c + ' Merge_Target_Account__c: ' + mergeAccount.Merge_Target_Account__c);
+                    accountsProcessed.add(mergeCandidate.Account__c);
+                    accountsProcessed.add(mergeCandidate.Merge_Target_Account__c);
 
-                try {
-                    c501MassMerge_SharedCode.AccountsMerge( new List<Account> {
-                        new Account(
-                            Id = mergeAccount.Account__c,
-                            C501_Merge_Action__c = 'Merge',
-                            C501_Merge_Confidence__c = mergeMetrics[0].Confidence__c,
-                            C501_Merge_Target__c = mergeAccount.Merge_Target_Account__c,
-                            C501_Merge_Metric_Name__c = mergeMetrics[0].Name
-                        ),
-                        new Account(
-                            Id = mergeAccount.Merge_Target_Account__c,
-                            C501_Merge_Action__c = 'Merge',
-                            C501_Merge_Confidence__c = mergeMetrics[0].Confidence__c,
-                            C501_Merge_Target__c = mergeAccount.Account__c,
-                            C501_Merge_Metric_Name__c = mergeMetrics[0].Name
-                        )
-                    } );
-                } catch (Exception e) {
-                    // NoOp for now since Sandbox has partial data
-                    system.debug('***** Account__c: ' + mergeAccount.Account__c + ' Merge_Target_Account__c: ' + mergeAccount.Merge_Target_Account__c);
-                    system.debug('General Exception: ' + String.valueOf(e) + '\n\n' + e.getStackTraceString());
-                }
+                    system.debug('***** AutoMerge - Account__c: ' + mergeCandidate.Account__c + ' Merge_Target_Account__c: ' + mergeCandidate.Merge_Target_Account__c);
 
-                break;
+                    try {
+                        c501MassMerge_SharedCode.AccountsMerge( new List<Account> {
+                            new Account(
+                                Id = mergeCandidate.Account__c,
+                                C501_Merge_Action__c = 'Merge',
+                                C501_Merge_Confidence__c = mergeMetrics[0].Confidence__c,
+                                C501_Merge_Target__c = mergeCandidate.Merge_Target_Account__c,
+                                C501_Merge_Metric_Name__c = mergeMetrics[0].Name
+                            ),
+                            new Account(
+                                Id = mergeCandidate.Merge_Target_Account__c,
+                                C501_Merge_Action__c = 'Merge',
+                                C501_Merge_Confidence__c = mergeMetrics[0].Confidence__c,
+                                C501_Merge_Target__c = mergeCandidate.Account__c,
+                                C501_Merge_Metric_Name__c = mergeMetrics[0].Name
+                            )
+                        } );
+                    } catch (Exception e) {
+                        // NoOp for now since Sandbox has partial data
+                        system.debug('***** Account__c: ' + mergeCandidate.Account__c + ' Merge_Target_Account__c: ' + mergeCandidate.Merge_Target_Account__c);
+                        system.debug('General Exception: ' + String.valueOf(e) + '\n\n' + e.getStackTraceString());
+                    }
             }
         }
    }
