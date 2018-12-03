@@ -105,22 +105,22 @@ global class C501_MM_Rule_Contact_NameDOBService implements Schedulable {
         }
 
 		AggregateResult[] allAggregatedByContacts = [
-            SELECT Count(Id), Birthdate, C501_Gender__c, C501_FirstName_Initial__c, LastName, MAX(AccountId)MaxAccountId, MIN(AccountId)MinAccountId
+            SELECT Count(Id), Birthdate, Gender__c, C501_FirstName_Initial__c, LastName, MAX(AccountId)MaxAccountId, MIN(AccountId)MinAccountId
             FROM Contact
             Where C501_FirstName_Initial__c <> '' and LastName <> '' and Birthdate <> null
-            Group By C501_FirstName_Initial__c, LastName, Birthdate, C501_Gender__c
+            Group By C501_FirstName_Initial__c, LastName, Birthdate, Gender__c
             Having Count(Id) > 1
             Order By Count(Id) DESC];
 
 		AggregateResult[] allAggregatedByServiceContacts = [
-            SELECT Count(Id), C501_Birthdate__c, Gender__c, C501_FirstName_Initial__c, C501_Last_Name__c, C501_Service_Household_Id__r.C501_Start_Date__c, MAX(C501_Service_Household_Id__r.C501_Household__c)MaxAccountId, MIN(C501_Service_Household_Id__r.C501_Household__c)MinAccountId
+            SELECT Count(Id), C501_Birthdate__c, C501_Gender__c, C501_FirstName_Initial__c, C501_Last_Name__c, C501_Service_Household_Id__r.C501_Start_Date__c, MAX(C501_Service_Household_Id__r.C501_Household__c)MaxAccountId, MIN(C501_Service_Household_Id__r.C501_Household__c)MinAccountId
             FROM C501_Service_Contact__c
             Where C501_FirstName_Initial__c <> ''
                 and C501_Last_Name__c <> ''
                 and C501_Birthdate__c <> null
                 and C501_Service_Household_Id__r.C501_Start_Date__c <> null
-                and (NOT C501_Service_Household_Id__r.Program like '%Change Request%')
-            Group By C501_FirstName_Initial__c, C501_Last_Name__c, C501_Birthdate__c, Gender__c, C501_Service_Household_Id__r.C501_Start_Date__c
+                and (NOT C501_Service_Household_Id__r.C501_Program__c like '%Change Request%')
+            Group By C501_FirstName_Initial__c, C501_Last_Name__c, C501_Birthdate__c, C501_Gender__c, C501_Service_Household_Id__r.C501_Start_Date__c
             Having Count(Id) > 1
             Order By Count(Id) DESC];
 
