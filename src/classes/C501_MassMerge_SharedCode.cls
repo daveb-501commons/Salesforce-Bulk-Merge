@@ -92,7 +92,7 @@ global with sharing class C501_MassMerge_SharedCode {
             }
         }
 
-        // Get related Client Visits per Account
+        // Get related Client Visits per Merge Account
         Map<Id, List<Id>> relatedClientVisits = new Map<Id, List<Id>>();
         for(Client_Visit__c relatedClientVisit : [
             SELECT Id, C501_IS_Household__c
@@ -108,7 +108,7 @@ global with sharing class C501_MassMerge_SharedCode {
                 }
         }
 
-        // Get related Account Merges per Account
+        // Get related Account Merges per Merge Account
         Map<Id, List<Id>> relatedAccountMerges = new Map<Id, List<Id>>();
         for(C501_Account_Merge__c relatedAccountMerge : [
             SELECT Id, Account__c
@@ -136,7 +136,7 @@ global with sharing class C501_MassMerge_SharedCode {
         list<C501_Service_Household__c> listServiceHouseholdsUpdate = new list<C501_Service_Household__c>();
         list<C501_Account_Merge__c> listAccountMergesUpdate = new list<C501_Account_Merge__c>();
         list<Client_Visit__c> listClientVisitsUpdate = new list<Client_Visit__c>();
-        list<C501_Account_Merge__c> listAccountMergesDelete = new List<C501_Account_Merge__c>();
+        Map<Id, C501_Account_Merge__c> mapAccountMergesDelete = new Map<Id, C501_Account_Merge__c>();
 
         for (Account account : listAccountsMerge) {
 
@@ -186,9 +186,11 @@ global with sharing class C501_MassMerge_SharedCode {
 
             // Delete Account Merge
             if (account.C501_Merge_Account__c != null && !String.isBlank(account.C501_Merge_Account__c)) {
-                listAccountMergesDelete.add(new C501_Account_Merge__c (
-                    Id = account.C501_Merge_Account__c
-                ));
+                if (!mapAccountMergesDelete.containsKey(account.C501_Merge_Account__c)) {
+                    mapAccountMergesDelete.put(account.C501_Merge_Account__c, new C501_Account_Merge__c (
+                        Id = account.C501_Merge_Account__c
+                    ));
+                }
             }
         }
 
@@ -204,8 +206,8 @@ global with sharing class C501_MassMerge_SharedCode {
 
         ContactsMerge(masterAccountId, listAccountsMerge);
 
-        if (!listAccountMergesDelete.isEmpty()) {
-            delete listAccountMergesDelete;
+        if (!mapAccountMergesDelete.isEmpty()) {
+            delete mapAccountMergesDelete.values();
         }
 
         // Update Merge Counts
@@ -312,37 +314,31 @@ global with sharing class C501_MassMerge_SharedCode {
 
         Map<Id, Contact> accountsWithContacts = new Map<Id, Contact>();
         for(Contact contact : [
-            SELECT AccountId, Id, Phone
+            SELECT AccountId, Id
             FROM Contact
             WHERE AccountId in :mergeAccounts]) {
                 accountsWithContacts.put(contact.AccountId, contact);
         }
 
-        List<Account> deleteAccountsNoContacts = new List<Account>();
+        Map<Id, C501_Service_Household__c> accountsWithServices = new Map<Id, C501_Service_Household__c>();
+        for(C501_Service_Household__c serviceHousehold : [
+            SELECT C501_Household__c, Id
+            FROM C501_Service_Household__c
+            WHERE C501_Household__c in :mergeAccounts]) {
+                accountsWithServices.put(serviceHousehold.C501_Household__c, serviceHousehold);
+        }
+
+        List<Account> deleteAccountsNoContactsNoServices = new List<Account>();
         for (Account mergeAccount :mergeAccounts) {
-            if (!accountsWithContacts.containsKey(mergeAccount.Id)) {
+            if (!accountsWithContacts.containsKey(mergeAccount.Id) &&
+                !accountsWithServices.containsKey(mergeAccount.Id)) {
                 mergeAccount.C501_Trigger_Ignore_Change__c = true;
-                deleteAccountsNoContacts.add(mergeAccount);
+                deleteAccountsNoContactsNoServices.add(mergeAccount);
             }
         }
 
-        // Hack - for some reason there is a Change Request on the Account.  A change is causing a Change Request making it so can't delete the Account
-        List<C501_Service_Household__c> deleteServicesOnAccountsNoContacts = new List<C501_Service_Household__c>();
-        for (C501_Service_Household__c deleteSH : [
-            SELECT Id
-            FROM C501_Service_Household__c
-            WHERE Name like '%Change Request%' and C501_Household__c in :deleteAccountsNoContacts]) {
-                deleteServicesOnAccountsNoContacts.add(new C501_Service_Household__c (
-                    Id = deleteSH.Id
-                ));
-        }
-
-        if (!deleteServicesOnAccountsNoContacts.isEmpty()) {
-            delete deleteServicesOnAccountsNoContacts;
-        }
-
-        if (!deleteAccountsNoContacts.isEmpty()) {
-            delete deleteAccountsNoContacts;
+        if (!deleteAccountsNoContactsNoServices.isEmpty()) {
+            delete deleteAccountsNoContactsNoServices;
         }
     }
 

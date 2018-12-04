@@ -140,6 +140,10 @@ global class C501_MM_Rule_Contact_NameDOBService implements Schedulable {
             maxId = result.get('MaxAccountId').toString();
             minId = result.get('MinAccountId').toString();
 
+            if (String.isEmpty(maxId) || String.isEmpty(minId)) {
+                continue;
+            }
+
             if (accountsByService.contains(maxId) && accountsByService.contains(minId)) {
                 system.debug('*****C501_MM_Rule_Contact_NameDOBService::execute ByContacts Found - maxId: ' + maxId
                     + ' minId: ' + minId + ' UniqueId: ' + uniqueId + ' Confidence: ' + mergeMetrics[0].Confidence__c
@@ -174,8 +178,8 @@ global class C501_MM_Rule_Contact_NameDOBService implements Schedulable {
 
             Set<Id> accountsProcessed = new Set<Id>();
             for (C501_Account_Merge__c mergeCandidate : [
-                SELECT Account__c, Merge_Target_Account__c
-                FROM C501_Account_Merge__c LIMIT 25]) {
+                SELECT Id, Account__c, Merge_Target_Account__c, Merge_Confidence__c
+                FROM C501_Account_Merge__c LIMIT 200]) {
 
                     // Check whether account Id merge already attempted
                     if (accountsProcessed.contains(mergeCandidate.Account__c) || accountsProcessed.contains(mergeCandidate.Merge_Target_Account__c)) {
@@ -196,16 +200,18 @@ global class C501_MM_Rule_Contact_NameDOBService implements Schedulable {
                             new Account(
                                 Id = mergeCandidate.Account__c,
                                 C501_Merge_Action__c = 'Merge',
-                                C501_Merge_Confidence__c = mergeMetrics[0].Confidence__c,
+                                C501_Merge_Confidence__c = mergeCandidate.Merge_Confidence__c,
                                 C501_Merge_Target__c = mergeCandidate.Merge_Target_Account__c,
-                                C501_Merge_Metric_Name__c = mergeMetrics[0].Name
+                                C501_Merge_Metric_Name__c = mergeMetrics[0].Name,
+                                C501_Merge_Account__c = mergeCandidate.Id
                             ),
                             new Account(
                                 Id = mergeCandidate.Merge_Target_Account__c,
                                 C501_Merge_Action__c = 'Merge',
-                                C501_Merge_Confidence__c = mergeMetrics[0].Confidence__c,
-                                C501_Merge_Target__c = mergeCandidate.Account__c,
-                                C501_Merge_Metric_Name__c = mergeMetrics[0].Name
+                                C501_Merge_Confidence__c = mergeCandidate.Merge_Confidence__c,
+                                C501_Merge_Target__c = mergeCandidate.Merge_Target_Account__c,
+                                C501_Merge_Metric_Name__c = mergeMetrics[0].Name,
+                                C501_Merge_Account__c = mergeCandidate.Id
                             )
                         } );
                     } catch (Exception e) {

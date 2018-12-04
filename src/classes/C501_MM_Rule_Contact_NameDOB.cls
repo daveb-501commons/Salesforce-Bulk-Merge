@@ -41,6 +41,11 @@ global class C501_MM_Rule_Contact_NameDOB implements Schedulable {
         for (AggregateResult result : allAggregatedAccounts)  {
             maxId = result.get('MaxAccountId').toString();
             minId = result.get('MinAccountId').toString();
+
+            if (String.isEmpty(maxId) || String.isEmpty(minId)) {
+                continue;
+            }
+
             uniqueId = mergeMetrics[0].Name + String.valueOf(minId) + String.valueOf(maxId);
             mergeAccounts.put(uniqueId, new C501_Account_Merge__c(
                 Unique_Id__c = uniqueId,

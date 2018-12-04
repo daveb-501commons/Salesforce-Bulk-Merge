@@ -179,6 +179,7 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
 		Map<Id,C501_Account_Merge__c> accountsMerge = new Map<Id,C501_Account_Merge__c>();
         accountsMerge.put(accountFilter.Id, new C501_Account_Merge__c(
             Merge_Confidence__c = 100.0));
+
 		for(C501_Account_Merge__c accountMerge : [
 			SELECT Id, Account__c, Merge_Target_Account__c, Merge_Confidence__c, Merge_Action__c, Merge_Metric__c
 			FROM C501_Account_Merge__c
