@@ -45,10 +45,14 @@ global class C501_MM_Rule_Contact_NameDOBService implements Schedulable {
             return;
         }
 
+        Date dateUnder18 = date.today().addYears(-18);
+
 		AggregateResult[] allAggregatedByContacts = [
             SELECT Count(AccountId), Birthdate, Gender__c, C501_FirstName_Initial__c, LastName, MAX(AccountId)MaxAccountId, MIN(AccountId)MinAccountId
             FROM Contact
-            Where C501_FirstName_Initial__c <> '' and LastName <> '' and Birthdate <> null
+            Where C501_FirstName_Initial__c <> ''
+                and LastName <> ''
+                and Birthdate <> null and Birthdate < :dateUnder18
             Group By C501_FirstName_Initial__c, LastName, Birthdate, Gender__c
             Having Count(AccountId) > 1
             Order By Count(AccountId) DESC];
@@ -58,7 +62,7 @@ global class C501_MM_Rule_Contact_NameDOBService implements Schedulable {
             FROM C501_Service_Contact__c
             Where C501_FirstName_Initial__c <> ''
                 and C501_Last_Name__c <> ''
-                and C501_Birthdate__c <> null
+                and C501_Birthdate__c <> null and C501_Birthdate__c < :dateUnder18
                 and C501_Service_Household_Id__r.C501_Start_Date__c <> null
                 and (NOT C501_Service_Household_Id__r.C501_Program__c like '%Change Request%')
             Group By C501_FirstName_Initial__c, C501_Last_Name__c, C501_Birthdate__c, C501_Gender__c, C501_Service_Household_Id__r.C501_Start_Date__c

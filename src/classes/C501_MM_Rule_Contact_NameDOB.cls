@@ -28,10 +28,14 @@ global class C501_MM_Rule_Contact_NameDOB implements Schedulable {
             insert mergeMetrics;
         }
 
+        Date dateUnder18 = date.today().addYears(-18);
+
 		AggregateResult[] allAggregatedAccounts = [
             SELECT Count(AccountId), Birthdate, C501_FirstName_Initial__c, LastName, MAX(AccountId)MaxAccountId, MIN(AccountId)MinAccountId
             FROM Contact
-            Where C501_FirstName_Initial__c <> '' and LastName <> '' and Birthdate <> null
+            Where C501_FirstName_Initial__c <> ''
+                and LastName <> ''
+                and Birthdate <> null and Birthdate < :dateUnder18
             Group By C501_FirstName_Initial__c, LastName, Birthdate
             Having Count(AccountId) > 1
             Order By Count(AccountId) DESC];
