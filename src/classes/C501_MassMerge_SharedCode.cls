@@ -255,14 +255,14 @@ global with sharing class C501_MassMerge_SharedCode {
             masterContactIds.add(masterContact.Id);
         }
 
-        List<Id> allContacttIds = new List<Id>(mergeContactIds);
-        allContacttIds.addAll(masterContactIds);
+        List<Id> allContactIds = new List<Id>(mergeContactIds);
+        allContactIds.addAll(masterContactIds);
         Set<String> uniqueOtherNames = new Set<String>();
         List<C501_Other_Name__c> contactOtherNames = new List<C501_Other_Name__c>();
         for(C501_Other_Name__c contactOtherName : [
             SELECT Id, C501_Contact__c, C501_Other_Name__c
             FROM C501_Other_Name__c
-            WHERE C501_Contact__c in :allContacttIds]) {
+            WHERE C501_Contact__c in :allContactIds]) {
                 contactOtherNames.add(contactOtherName);
                 uniqueOtherNames.add(contactOtherName.C501_Contact__c + contactOtherName.C501_Other_Name__c);
             }
