@@ -105,15 +105,15 @@ global class C501_MM_Rule_Contact_NameDOBService implements Schedulable {
         }
 
 		AggregateResult[] allAggregatedByContacts = [
-            SELECT Count(Id), Birthdate, Gender__c, C501_FirstName_Initial__c, LastName, MAX(AccountId)MaxAccountId, MIN(AccountId)MinAccountId
+            SELECT Count(AccountId), Birthdate, Gender__c, C501_FirstName_Initial__c, LastName, MAX(AccountId)MaxAccountId, MIN(AccountId)MinAccountId
             FROM Contact
             Where C501_FirstName_Initial__c <> '' and LastName <> '' and Birthdate <> null
             Group By C501_FirstName_Initial__c, LastName, Birthdate, Gender__c
-            Having Count(Id) > 1
-            Order By Count(Id) DESC];
+            Having Count(AccountId) > 1
+            Order By Count(AccountId) DESC];
 
 		AggregateResult[] allAggregatedByServiceContacts = [
-            SELECT Count(Id), C501_Birthdate__c, C501_Gender__c, C501_FirstName_Initial__c, C501_Last_Name__c, C501_Service_Household_Id__r.C501_Start_Date__c, MAX(C501_Service_Household_Id__r.C501_Household__c)MaxAccountId, MIN(C501_Service_Household_Id__r.C501_Household__c)MinAccountId
+            SELECT Count(C501_Service_Household_Id__r.C501_Household__c), C501_Birthdate__c, C501_Gender__c, C501_FirstName_Initial__c, C501_Last_Name__c, C501_Service_Household_Id__r.C501_Start_Date__c, MAX(C501_Service_Household_Id__r.C501_Household__c)MaxAccountId, MIN(C501_Service_Household_Id__r.C501_Household__c)MinAccountId
             FROM C501_Service_Contact__c
             Where C501_FirstName_Initial__c <> ''
                 and C501_Last_Name__c <> ''
@@ -121,8 +121,8 @@ global class C501_MM_Rule_Contact_NameDOBService implements Schedulable {
                 and C501_Service_Household_Id__r.C501_Start_Date__c <> null
                 and (NOT C501_Service_Household_Id__r.C501_Program__c like '%Change Request%')
             Group By C501_FirstName_Initial__c, C501_Last_Name__c, C501_Birthdate__c, C501_Gender__c, C501_Service_Household_Id__r.C501_Start_Date__c
-            Having Count(Id) > 1
-            Order By Count(Id) DESC];
+            Having Count(C501_Service_Household_Id__r.C501_Household__c) > 1
+            Order By Count(C501_Service_Household_Id__r.C501_Household__c) DESC];
 
         String maxId;
         String minId;
@@ -137,14 +137,16 @@ global class C501_MM_Rule_Contact_NameDOBService implements Schedulable {
         Map<String, C501_Account_Merge__c> mergeAccounts = new Map<String, C501_Account_Merge__c>();
         String uniqueId;
         for (AggregateResult result : allAggregatedByContacts)  {
+
             maxId = result.get('MaxAccountId').toString();
             minId = result.get('MinAccountId').toString();
 
-            if (String.isEmpty(maxId) || String.isEmpty(minId)) {
+            if (String.isEmpty(maxId) || String.isEmpty(minId) || maxId == minId) {
                 continue;
             }
 
             if (accountsByService.contains(maxId) && accountsByService.contains(minId)) {
+
                 system.debug('*****C501_MM_Rule_Contact_NameDOBService::execute ByContacts Found - maxId: ' + maxId
                     + ' minId: ' + minId + ' UniqueId: ' + uniqueId + ' Confidence: ' + mergeMetrics[0].Confidence__c
                     + 'MetricId: ' + mergeMetrics[0].Id);
@@ -179,7 +181,9 @@ global class C501_MM_Rule_Contact_NameDOBService implements Schedulable {
             Set<Id> accountsProcessed = new Set<Id>();
             for (C501_Account_Merge__c mergeCandidate : [
                 SELECT Id, Account__c, Merge_Target_Account__c, Merge_Confidence__c
-                FROM C501_Account_Merge__c LIMIT 200]) {
+                FROM C501_Account_Merge__c
+                WHERE Merge_Metric__r.Name = 'Contact_NameDOBService'
+                LIMIT 200]) {
 
                     // Check whether account Id merge already attempted
                     if (accountsProcessed.contains(mergeCandidate.Account__c) || accountsProcessed.contains(mergeCandidate.Merge_Target_Account__c)) {

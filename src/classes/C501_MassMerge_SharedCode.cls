@@ -137,11 +137,14 @@ global with sharing class C501_MassMerge_SharedCode {
         list<C501_Account_Merge__c> listAccountMergesUpdate = new list<C501_Account_Merge__c>();
         list<Client_Visit__c> listClientVisitsUpdate = new list<Client_Visit__c>();
         Map<Id, C501_Account_Merge__c> mapAccountMergesDelete = new Map<Id, C501_Account_Merge__c>();
+        Set<Id> accountIds = new Set<Id> { masterAccountId };
 
         for (Account account : listAccountsMerge) {
 
             system.debug('C501_CTRL_MassMergeAccounts::SaveAccounts Merge Accounts - account.Id: ' + account.Id 
                 + ' account.C501_Merge_Action__c: ' + account.C501_Merge_Action__c);
+
+            accountIds.add(account.Id);
 
             // Reassign Service Households
             if (relatedServiceHouseholds.containsKey(account.Id)) {
@@ -206,6 +209,14 @@ global with sharing class C501_MassMerge_SharedCode {
 
         ContactsMerge(masterAccountId, listAccountsMerge);
 
+        // Check for other merges related to merge accounts
+        for (C501_Account_Merge__c mergeRelated : [
+            SELECT Id
+            FROM C501_Account_Merge__c
+            WHERE Account__c in :accountIds or Merge_Target_Account__c in :accountIds]) {
+                mapAccountMergesDelete.put(mergeRelated.Id, mergeRelated);
+            }
+
         if (!mapAccountMergesDelete.isEmpty()) {
             delete mapAccountMergesDelete.values();
         }
@@ -267,7 +278,7 @@ global with sharing class C501_MassMerge_SharedCode {
                 if (masterContact.Birthdate == mergeContact.Birthdate
                     && masterContact.FirstName == mergeContact.FirstName
                     && masterAccountId != mergeContact.AccountId
-                    && (masterContact.C501_Is_In_Household__c || !masterContact.C501_Is_In_Household__c && !mergeContact.C501_Is_In_Household__c)) {
+                    && (masterContact.C501_Is_In_Household__c || (!masterContact.C501_Is_In_Household__c && !mergeContact.C501_Is_In_Household__c))) {
                     
                     // Reassign any service contacts
                     for (C501_Service_Contact__c serviceContact :mergeServiceContacts) {

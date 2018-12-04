@@ -2,8 +2,10 @@
 // Run Code from Developer Console
 //  1) Debug -> Open Execute Anonymous Window
 //  2) paste code
-//      C501_MM_Rule_Contact_NameDOB schedule = new C501_MM_Rule_Contact_NameDOB();
-//      schedule.execute(null);
+/*
+      C501_MM_Rule_Contact_NameDOB schedule = new C501_MM_Rule_Contact_NameDOB();
+      schedule.execute(null);
+*/
 //  3) click Execute
 //
 
@@ -27,12 +29,12 @@ global class C501_MM_Rule_Contact_NameDOB implements Schedulable {
         }
 
 		AggregateResult[] allAggregatedAccounts = [
-            SELECT Count(Id), Birthdate, C501_FirstName_Initial__c, LastName, MAX(AccountId)MaxAccountId, MIN(AccountId)MinAccountId
+            SELECT Count(AccountId), Birthdate, C501_FirstName_Initial__c, LastName, MAX(AccountId)MaxAccountId, MIN(AccountId)MinAccountId
             FROM Contact
             Where C501_FirstName_Initial__c <> '' and LastName <> '' and Birthdate <> null
             Group By C501_FirstName_Initial__c, LastName, Birthdate
-            Having Count(Id) > 1
-            Order By Count(Id) DESC];
+            Having Count(AccountId) > 1
+            Order By Count(AccountId) DESC];
 
         Map<String, C501_Account_Merge__c> mergeAccounts = new Map<String, C501_Account_Merge__c>();
         String maxId;
@@ -42,7 +44,7 @@ global class C501_MM_Rule_Contact_NameDOB implements Schedulable {
             maxId = result.get('MaxAccountId').toString();
             minId = result.get('MinAccountId').toString();
 
-            if (String.isEmpty(maxId) || String.isEmpty(minId)) {
+            if (String.isEmpty(maxId) || String.isEmpty(minId) || maxId == minId) {
                 continue;
             }
 
