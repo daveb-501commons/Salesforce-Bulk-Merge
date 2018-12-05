@@ -19,7 +19,10 @@
 //
 // Schedule Code FROM Developer Console
 /*
-    system.schedule('Contact_NameDOBService_0', '0 0 * * * ?', new C501_MM_Rule_Contact_NameDOBService());
+    integer numSchedules = 30;
+    for (integer i = 0; i < numSchedules; i++) {
+        system.schedule('Contact_NameDOBService_' + String.valueOf(i * 2), '0 ' + String.valueOf(i * 2) + ' * * * ?', new C501_MM_Rule_Contact_NameDOBService());
+    }                      
 */
 
 global class C501_MM_Rule_Contact_NameDOBService implements Schedulable {
