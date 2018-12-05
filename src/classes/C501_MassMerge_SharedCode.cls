@@ -12,7 +12,7 @@
       documentation and/or other materials provided with the distribution.
     * Neither the name of Salesforce.org nor the names of
       its contributors may be used to endorse or promote products derived
-      from this software without specific prior written permission.
+      FROM this software without specific prior written permission.
  
     THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
     "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT 
@@ -366,25 +366,26 @@ global with sharing class C501_MassMerge_SharedCode {
 
         if (String.isBlank(programName)) {
             for (AggregateResult result : [
-                select Account__c, Account__r.Name from C501_Account_Merge__c
-                where Merge_Confidence__c >= :fromMergeConfidence
+                SELECT Account__c, Account__r.Name
+                FROM C501_Account_Merge__c
+                WHERE Merge_Confidence__c >= :fromMergeConfidence
                     and Merge_Confidence__c <= :toMergeConfidence
                     and Merge_Action__c <> 'Ignore' 
-                group by Account__c, Account__r.Name
-                limit 999]) {
+                GROUP BY Account__c, Account__r.Name
+                LIMIT 999]) {
                     listSO.add(new SelectOption(result.get('Account__c').toString(),
                         result.get('Name').toString()));
                 }
         }
         else {
             for (AggregateResult result : [
-                select Account__c, Account__r.Name from C501_Account_Merge__c
-                where Merge_Confidence__c >= :fromMergeConfidence
+                SELECT Account__c, Account__r.Name FROM C501_Account_Merge__c
+                WHERE Merge_Confidence__c >= :fromMergeConfidence
                     and Merge_Confidence__c <= :toMergeConfidence
                     and Merge_Action__c <> 'Ignore'
                     and Account__c in (SELECT C501_Household__c FROM C501_Service_Household__c WHERE C501_Program__c = :programName) 
-                group by Account__c, Account__r.Name
-                limit 999]) {
+                GROUP BY Account__c, Account__r.Name
+                LIMIT 999]) {
                     if (!setSOUnique.contains(result.get('Account__c').toString())) {
                         setSOUnique.add(result.get('Account__c').toString());
                         listSO.add(new SelectOption(result.get('Account__c').toString(),
@@ -394,13 +395,13 @@ global with sharing class C501_MassMerge_SharedCode {
 
             // Query based on Merge_Target_Account__c seperately because nested semi-join not allowed in SOQL
             for (AggregateResult result : [
-                select Merge_Target_Account__c, Merge_Target_Account__r.Name, Account__c from C501_Account_Merge__c
-                where Merge_Confidence__c >= :fromMergeConfidence
+                SELECT Merge_Target_Account__c, Merge_Target_Account__r.Name, Account__c FROM C501_Account_Merge__c
+                WHERE Merge_Confidence__c >= :fromMergeConfidence
                     and Merge_Confidence__c <= :toMergeConfidence
                     and Merge_Action__c <> 'Ignore'
                     and Merge_Target_Account__c in (SELECT C501_Household__c FROM C501_Service_Household__c WHERE C501_Program__c = :programName)
-                group by Merge_Target_Account__c, Merge_Target_Account__r.Name, Account__c
-                limit 999]) {
+                GROUP BY Merge_Target_Account__c, Merge_Target_Account__r.Name, Account__c
+                LIMIT 999]) {
                     if (!setSOUnique.contains(result.get('Account__c').toString())) {
                         if (setSOUnique.size() >= 999 || listSO.size() >= 999) {
                             break;
@@ -453,7 +454,7 @@ global with sharing class C501_MassMerge_SharedCode {
         List<SelectOption> greaterSelectOption = new List<SelectOption>();
         integer pivot = selectOptionsToSort.size() / 2;
         
-        //save the pivot and remove it from the selectOption list
+        //save the pivot and remove it FROM the selectOption list
         SelectOption pivotValue = selectOptionsToSort[pivot];
         selectOptionsToSort.remove(pivot);
         for(selectOption SO : selectOptionsToSort){
@@ -467,36 +468,6 @@ global with sharing class C501_MassMerge_SharedCode {
         sortedSelectOptions.addAll(selectOptionSortByLabel(lessSelectOption));
         sortedSelectOptions.add(pivotValue);
         sortedSelectOptions.addAll(selectOptionSortByLabel(greaterSelectOption));
-        return SortedSelectOptions;
-    }
-
-    /*
-        @Param:List of selectOption to be sort.
-        @Return: Sorted list of selectOptions by Value
-    */
-    public static list<selectOption> selectOptionSortByValue(list<selectOption>
-                                                            selectOptionsToSort){
-        if(selectOptionsToSort == null || selectOptionsToSort.size() <= 1){
-            return selectOptionsToSort;
-        }       
-        List<SelectOption> lessSelectOption = new List<SelectOption>();
-        List<SelectOption> greaterSelectOption = new List<SelectOption>();
-        integer pivot = selectOptionsToSort.size() / 2;
-         
-        //save the pivot and remove it from the selectOption list
-        SelectOption pivotValue = selectOptionsToSort[pivot]; 
-        selectOptionsToSort.remove(pivot);
-        for(selectOption SO : selectOptionsToSort){
-            if(SO.getValue() <= pivotValue.getValue()){
-                lessSelectOption.add(SO);
-            }else if(SO.getValue() > pivotValue.getValue()){
-                greaterSelectOption.add(SO);   
-            }
-        }
-        list<selectOption> SortedSelectOptions = new list<selectOption>(); 
-        SortedSelectOptions.addAll(selectOptionSortByValue(lessSelectOption));
-        SortedSelectOptions.add(pivotValue);
-        SortedSelectOptions.addAll(selectOptionSortByValue(greaterSelectOption));
         return SortedSelectOptions;
     }
 }

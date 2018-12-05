@@ -1,5 +1,5 @@
 //
-// Run Code from Developer Console
+// Run Code FROM Developer Console
 //  1) Debug -> Open Execute Anonymous Window
 //  2) paste code
 /*
@@ -33,17 +33,15 @@ global class C501_MM_Rule_Contact_NameDOB implements Schedulable {
 		AggregateResult[] allAggregatedAccounts = [
             SELECT Count(AccountId), Birthdate, C501_FirstName_Initial__c, LastName, MAX(AccountId)MaxAccountId, MIN(AccountId)MinAccountId
             FROM Contact
-            Where C501_FirstName_Initial__c <> ''
+            WHERE C501_FirstName_Initial__c <> ''
                 and LastName <> ''
                 and Birthdate <> null and Birthdate < :dateUnder18
-            Group By C501_FirstName_Initial__c, LastName, Birthdate
+            GROUP BY C501_FirstName_Initial__c, LastName, Birthdate
             Having Count(AccountId) > 1
             Order By Count(AccountId) DESC];
 
         Map<String, C501_Account_Merge__c> mergeAccounts = new Map<String, C501_Account_Merge__c>();
-        String maxId;
-        String minId;
-        String uniqueId;
+        String uniqueId, minId, maxId;
         for (AggregateResult result : allAggregatedAccounts)  {
             maxId = result.get('MaxAccountId').toString();
             minId = result.get('MinAccountId').toString();

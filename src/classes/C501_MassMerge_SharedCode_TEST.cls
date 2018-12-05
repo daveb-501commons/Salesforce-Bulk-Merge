@@ -12,7 +12,7 @@
       documentation and/or other materials provided with the distribution.
     * Neither the name of Salesforce.org nor the names of
       its contributors may be used to endorse or promote products derived
-      from this software without specific prior written permission.
+      FROM this software without specific prior written permission.
  
     THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
     "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT 
@@ -35,5 +35,7 @@ public with sharing class C501_MassMerge_SharedCode_TEST {
     private static testmethod void CodeCoverageTests() {
 
       System.AssertEquals('', C501_MassMerge_SharedCode.getNamespace());
+
+      
     }
 }

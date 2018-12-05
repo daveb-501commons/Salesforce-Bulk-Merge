@@ -1,5 +1,5 @@
 //
-// Run Code from Developer Console
+// Run Code FROM Developer Console
 //  1) Debug -> Open Execute Anonymous Window
 //  2) paste code
 /*
@@ -12,12 +12,12 @@
 /*
     List<CronJobDetail> scheduledJobs = [SELECT Id FROM CronJobDetail WHERE Name like 'Contact_NameDOBService_%'];
     for (CronJobDetail scheduledJob :scheduledJobs) {
-        Id jobId = [SELECT Id from CronTrigger WHERE CronJobDetailId = :scheduledJob.Id].Id;
+        Id jobId = [SELECT Id FROM CronTrigger WHERE CronJobDetailId = :scheduledJob.Id].Id;
         System.abortJob(jobId);
     }
 */
 //
-// Schedule Code from Developer Console
+// Schedule Code FROM Developer Console
 /*
     system.schedule('Contact_NameDOBService_0', '0 0 * * * ?', new C501_MM_Rule_Contact_NameDOBService());
 */
@@ -47,41 +47,34 @@ global class C501_MM_Rule_Contact_NameDOBService implements Schedulable {
 
         Date dateUnder18 = date.today().addYears(-18);
 
-		AggregateResult[] allAggregatedByContacts = [
-            SELECT Count(AccountId), Birthdate, Gender__c, C501_FirstName_Initial__c, LastName, MAX(AccountId)MaxAccountId, MIN(AccountId)MinAccountId
-            FROM Contact
-            Where C501_FirstName_Initial__c <> ''
-                and LastName <> ''
-                and Birthdate <> null and Birthdate < :dateUnder18
-            Group By C501_FirstName_Initial__c, LastName, Birthdate, Gender__c
-            Having Count(AccountId) > 1
-            Order By Count(AccountId) DESC];
-
+        // Workbench Disclaimer - add LIMIT 200 when using query in Workbench
 		AggregateResult[] allAggregatedByServiceContacts = [
-            SELECT Count(C501_Service_Household_Id__r.C501_Household__c), C501_Birthdate__c, C501_Gender__c, C501_FirstName_Initial__c, C501_Last_Name__c, C501_Service_Household_Id__r.C501_Start_Date__c, MAX(C501_Service_Household_Id__r.C501_Household__c)MaxAccountId, MIN(C501_Service_Household_Id__r.C501_Household__c)MinAccountId
+            SELECT Count(C501_Service_Household_Id__r.C501_Household__c),
+                C501_Birthdate__c,
+                C501_Gender__c,
+                C501_FirstName_Initial__c,
+                C501_Last_Name__c,
+                C501_Service_Household_Id__r.C501_Start_Date__c,
+                MAX(C501_Service_Household_Id__r.C501_Household__c)MaxAccountId,
+                MIN(C501_Service_Household_Id__r.C501_Household__c)MinAccountId
             FROM C501_Service_Contact__c
-            Where C501_FirstName_Initial__c <> ''
+            WHERE C501_FirstName_Initial__c <> ''
                 and C501_Last_Name__c <> ''
                 and C501_Birthdate__c <> null and C501_Birthdate__c < :dateUnder18
                 and C501_Service_Household_Id__r.C501_Start_Date__c <> null
                 and (NOT C501_Service_Household_Id__r.C501_Program__c like '%Change Request%')
-            Group By C501_FirstName_Initial__c, C501_Last_Name__c, C501_Birthdate__c, C501_Gender__c, C501_Service_Household_Id__r.C501_Start_Date__c
-            Having Count(C501_Service_Household_Id__r.C501_Household__c) > 1
-            Order By Count(C501_Service_Household_Id__r.C501_Household__c) DESC];
-
-        String maxId;
-        String minId;
-        Set<String> accountsByService = new Set<String>();
-        for (AggregateResult result : allAggregatedByServiceContacts)  {
-            maxId = result.get('MaxAccountId').toString();
-            minId = result.get('MinAccountId').toString();
-            accountsByService.add(maxId);
-            accountsByService.add(minId);
-        }
+                //and C501_Service_Household_Id__r.Name like 'Alton Household%'
+            GROUP BY C501_FirstName_Initial__c,
+                C501_Last_Name__c,
+                C501_Birthdate__c,
+                C501_Gender__c,
+                C501_Service_Household_Id__r.C501_Start_Date__c
+            HAVING Count(C501_Service_Household_Id__r.C501_Household__c) > 1
+            ORDER BY Count(C501_Service_Household_Id__r.C501_Household__c) DESC];
 
         Map<String, C501_Account_Merge__c> mergeAccounts = new Map<String, C501_Account_Merge__c>();
-        String uniqueId;
-        for (AggregateResult result : allAggregatedByContacts)  {
+        String uniqueId, maxId, minId;
+        for (AggregateResult result :allAggregatedByServiceContacts)  {
 
             maxId = result.get('MaxAccountId').toString();
             minId = result.get('MinAccountId').toString();
@@ -90,22 +83,21 @@ global class C501_MM_Rule_Contact_NameDOBService implements Schedulable {
                 continue;
             }
 
-            if (accountsByService.contains(maxId) && accountsByService.contains(minId)) {
+            uniqueId = mergeMetrics[0].Name + String.valueOf(minId) + String.valueOf(maxId);
 
-                system.debug('*****C501_MM_Rule_Contact_NameDOBService::execute ByContacts Found - maxId: ' + maxId
-                    + ' minId: ' + minId + ' UniqueId: ' + uniqueId + ' Confidence: ' + mergeMetrics[0].Confidence__c
-                    + 'MetricId: ' + mergeMetrics[0].Id);
+            system.debug('*****C501_MM_Rule_Contact_NameDOBService::execute ByContacts Found - maxId: ' + maxId
+                + ' minId: ' + minId + ' UniqueId: ' + uniqueId + ' Confidence: ' + mergeMetrics[0].Confidence__c
+                + 'MetricId: ' + mergeMetrics[0].Id);
 
-                uniqueId = mergeMetrics[0].Name + String.valueOf(minId) + String.valueOf(maxId);
+            mergeAccounts.put(uniqueId, new C501_Account_Merge__c(
+                Unique_Id__c = uniqueId,
+                Merge_Confidence__c = mergeMetrics[0].Confidence__c,
+                Account__c = minId,
+                Merge_Target_Account__c = maxId,
+                Merge_Metric__c = mergeMetrics[0].Id
+            ));
 
-                mergeAccounts.put(uniqueId, new C501_Account_Merge__c(
-                    Unique_Id__c = uniqueId,
-                    Merge_Confidence__c = mergeMetrics[0].Confidence__c,
-                    Account__c = minId,
-                    Merge_Target_Account__c = maxId,
-                    Merge_Metric__c = mergeMetrics[0].Id
-                ));
-            }
+            break;
         }
 
         //
@@ -116,11 +108,11 @@ global class C501_MM_Rule_Contact_NameDOBService implements Schedulable {
 
             // TBD - Look for anything other than Duplicate Id Error on Unique_Id__c which is expected
 		}
-
+/*
         C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
 
         // Check to AutoMerge
-        Integer mergeAutoMergeAttemptsRemaining = 5;            // SOQL Governor limit issue limit merge attempts to 5 because each Merge Attempt is currently 10 SOQL Queries
+        Integer mergeAutoMergeAttemptsRemaining = 5;            // SOQL Governor LIMIT issue LIMIT merge attempts to 5 because each Merge Attempt is currently 10 SOQL Queries
         if (mergeMetrics[0].AutoMerge_Percentage__c > 0.0) {
 
             Set<Id> accountsProcessed = new Set<Id>();
@@ -183,5 +175,6 @@ global class C501_MM_Rule_Contact_NameDOBService implements Schedulable {
                 delete mapAccountMergesDelete.values();
             }
         }
+*/
    }
 }

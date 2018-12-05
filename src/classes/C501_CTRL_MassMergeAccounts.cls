@@ -51,7 +51,7 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
         string id = ApexPages.currentPage().getParameters().get('id');
         if (id != null && id != '') accountFilter.Id = id;
         
-        // Get list of fields from fieldset
+        // Get list of fields FROM fieldset
         listStrFields = new List<String>();
         for (Schema.FieldSetMember f : SObjectType.Account.FieldSets.MassMergeAccounts.getFields()) {
             listStrFields.add(f.getFieldPath());
@@ -131,6 +131,7 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
 
         listSOAccounts = null;
         accountFilter.Id = null;
+        serviceHouseholdFilter.C501_Program__c = '';
         listAccounts = null;
         strSaveResults = null;
 
@@ -195,10 +196,10 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
 		}
 
         string strSoql = 
-            'select ' + String.join(listStrFields, ',');
+            'SELECT ' + String.join(listStrFields, ',');
 
         Set<Id> accountsMergeIds = accountsMerge.keySet();
-        strSoql += ' from Account where Id in :accountsMergeIds';
+        strSoql += ' FROM Account WHERE Id in :accountsMergeIds';
         
 /*        if (accountFilter.C501_Merge_Program__c != null)
             strSoql += ' and (C501_Merge_Program__c = :accountFilter.C501_Merge_Program__c or C501_Merge_Program__c = null) ';
