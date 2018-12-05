@@ -63,7 +63,6 @@ global class C501_MM_Rule_Contact_NameDOBService implements Schedulable {
                 and C501_Birthdate__c <> null and C501_Birthdate__c < :dateUnder18
                 and C501_Service_Household_Id__r.C501_Start_Date__c <> null
                 and (NOT C501_Service_Household_Id__r.C501_Program__c like '%Change Request%')
-                //and C501_Service_Household_Id__r.Name like 'Alton Household%'
             GROUP BY C501_FirstName_Initial__c,
                 C501_Last_Name__c,
                 C501_Birthdate__c,
@@ -96,8 +95,6 @@ global class C501_MM_Rule_Contact_NameDOBService implements Schedulable {
                 Merge_Target_Account__c = maxId,
                 Merge_Metric__c = mergeMetrics[0].Id
             ));
-
-            break;
         }
 
         //
@@ -108,7 +105,7 @@ global class C501_MM_Rule_Contact_NameDOBService implements Schedulable {
 
             // TBD - Look for anything other than Duplicate Id Error on Unique_Id__c which is expected
 		}
-/*
+
         C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
 
         // Check to AutoMerge
@@ -175,6 +172,5 @@ global class C501_MM_Rule_Contact_NameDOBService implements Schedulable {
                 delete mapAccountMergesDelete.values();
             }
         }
-*/
    }
 }
