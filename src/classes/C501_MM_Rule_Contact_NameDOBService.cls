@@ -38,7 +38,12 @@ global class C501_MM_Rule_Contact_NameDOBService implements Schedulable {
 		//
 
         // Get Merge Metric
-        List<C501_Merge_Metric__c> mergeMetrics = [SELECT Id, Name, Confidence__c, Enable__c, Total_Merge__c, AutoMerge_Percentage__c FROM C501_Merge_Metric__c WHERE Name = 'Contact_NameDOBService'];
+        List<C501_Merge_Metric__c> mergeMetrics = [
+            SELECT Id, Name, Confidence__c, Total_Merge__c,
+                Enable__c, Enabled_Programs__c,
+                AutoMerge_Percentage__c
+            FROM C501_Merge_Metric__c
+            WHERE Name = 'Contact_NameDOBService'];
         if (mergeMetrics.isEmpty()) {
             mergeMetrics.add( new C501_Merge_Metric__c (
                 Name = 'Contact_NameDOBService',
@@ -48,11 +53,12 @@ global class C501_MM_Rule_Contact_NameDOBService implements Schedulable {
             insert mergeMetrics;
         }
 
-        if (!mergeMetrics[0].Enable__c) {
+        if (!mergeMetrics[0].Enable__c || String.isEmpty(mergeMetrics[0].Enabled_Programs__c)) {
             return;
         }
 
         Date dateUnder18 = date.today().addYears(-18);
+        List<String> programs = mergeMetrics[0].Enabled_Programs__c.split(';');
 
         // Workbench Disclaimer - add LIMIT 200 when using query in Workbench
 		AggregateResult[] allAggregatedByServiceContacts = [
@@ -67,9 +73,10 @@ global class C501_MM_Rule_Contact_NameDOBService implements Schedulable {
             FROM C501_Service_Contact__c
             WHERE C501_FirstName_Initial__c <> ''
                 and C501_Last_Name__c <> ''
-                and C501_Birthdate__c <> null and C501_Birthdate__c < :dateUnder18
                 and C501_Service_Household_Id__r.C501_Start_Date__c <> null
                 and (NOT C501_Service_Household_Id__r.C501_Program__c like '%Change Request%')
+                and C501_Birthdate__c <> null and C501_Birthdate__c < :dateUnder18
+                and C501_Service_Household_Id__r.C501_Program__c in :programs
             GROUP BY C501_FirstName_Initial__c,
                 C501_Last_Name__c,
                 C501_Birthdate__c,
@@ -125,6 +132,11 @@ global class C501_MM_Rule_Contact_NameDOBService implements Schedulable {
                 FROM C501_Account_Merge__c
                 WHERE Merge_Metric__r.Name = 'Contact_NameDOBService'
                 LIMIT 200]) {
+
+                    // Check whether to process based on merge confidence
+                    if (mergeMetrics[0].AutoMerge_Percentage__c < mergeCandidate.Merge_Confidence__c) {
+                        continue;
+                    }
 
                     // Check whether account Id merge already attempted
                     if (accountsProcessed.contains(mergeCandidate.Account__c) || accountsProcessed.contains(mergeCandidate.Merge_Target_Account__c)) {

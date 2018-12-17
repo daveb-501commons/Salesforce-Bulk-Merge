@@ -131,7 +131,6 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
 
         listSOAccounts = null;
         accountFilter.Id = null;
-        serviceHouseholdFilter.C501_Program__c = '';
         listAccounts = null;
         strSaveResults = null;
 

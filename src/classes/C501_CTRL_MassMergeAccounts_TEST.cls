@@ -95,6 +95,7 @@ private with sharing class C501_CTRL_MassMergeAccounts_TEST {
         for (C501_Merge_Metric__c mergeMetric :[SELECT Id FROM C501_Merge_Metric__c]) {
             mergeMetric.Enable__c = true;
             mergeMetric.AutoMerge_Percentage__c = 0.0;
+            mergeMetric.Enabled_Programs__c = 'Energy Assistance';
 
             listMergeMetrics.add(mergeMetric);
         }
