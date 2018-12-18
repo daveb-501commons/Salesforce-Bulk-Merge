@@ -74,7 +74,6 @@ global class C501_MM_Rule_Contact_NameDOBService implements Schedulable {
             WHERE C501_FirstName_Initial__c <> ''
                 and C501_Last_Name__c <> ''
                 and C501_Service_Household_Id__r.C501_Start_Date__c <> null
-                and (NOT C501_Service_Household_Id__r.C501_Program__c like '%Change Request%')
                 and C501_Birthdate__c <> null and C501_Birthdate__c < :dateUnder18
                 and C501_Service_Household_Id__r.C501_Program__c in :programs
             GROUP BY C501_FirstName_Initial__c,
