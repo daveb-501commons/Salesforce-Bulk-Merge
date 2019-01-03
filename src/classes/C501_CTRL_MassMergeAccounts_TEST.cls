@@ -135,6 +135,12 @@ private with sharing class C501_CTRL_MassMergeAccounts_TEST {
         ctrl.serviceHouseholdFilter.C501_Program__c = 'Energy Assistance';
         System.Assert(ctrl.listAccounts.size() > 0);
 
+        // Check filter by Confidence
+        ctrl.accountFilter.Id = masterAccountId;
+        ctrl.accountFilter.C501_Merge_Confidence_From__c = 0.0;
+        ctrl.accountFilter.C501_Merge_Confidence_To__c = 100.0;
+        System.Assert(ctrl.listAccounts.size() > 0);
+
         // Clear filter
         ctrl.ChangeProgram();
         ctrl.accountFilter.Id = masterAccountId;

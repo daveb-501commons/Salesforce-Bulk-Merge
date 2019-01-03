@@ -33,9 +33,5 @@ public with sharing class C501_MassMerge_SharedCode_TEST {
 
     //==================== TEST METHOD(s) ======================================
     private static testmethod void CodeCoverageTests() {
-
-      System.AssertEquals('', C501_MassMerge_SharedCode.getNamespace());
-
-      
     }
 }

@@ -231,7 +231,7 @@ global with sharing class C501_MassMerge_SharedCode {
     global void ContactsMerge(Id masterAccountId, List<Account> mergeAccounts) {
 
         List<Contact> mergeContacts = [
-            SELECT Id, AccountId, Birthdate, FirstName, Phone
+            SELECT Id, AccountId, Birthdate, C501_FirstName_Initial__c, Gender__c
             FROM Contact
             WHERE AccountId in :mergeAccounts];
 
@@ -246,7 +246,7 @@ global with sharing class C501_MassMerge_SharedCode {
             WHERE C501_Contact__c in :mergeContactIds];
 
         List<Contact> masterContacts = [
-            SELECT Id, AccountId, Birthdate, FirstName, C501_Is_In_Household__c
+            SELECT Id, AccountId, Birthdate, C501_FirstName_Initial__c, Gender__c, C501_Is_In_Household__c
             FROM Contact
             WHERE AccountId = :masterAccountId];
 
@@ -274,9 +274,11 @@ global with sharing class C501_MassMerge_SharedCode {
 
             for (contact mergeContact : mergeContacts) {
 
-                // Match based on Birthdate and Firstname (in case of Twins).  Don't match Last Name in case of name change
-                if (masterContact.Birthdate == mergeContact.Birthdate
-                    && masterContact.FirstName == mergeContact.FirstName
+                // Match based on Birthdate and Firstname Initial (in case of Twins).  Don't match Last Name in case of name change
+                if (mergeContact.Birthdate <> null
+                    && masterContact.Birthdate == mergeContact.Birthdate
+                    && masterContact.C501_FirstName_Initial__c == mergeContact.C501_FirstName_Initial__c
+                    && masterContact.Gender__c == mergeContact.Gender__c
                     && masterAccountId != mergeContact.AccountId
                     && (masterContact.C501_Is_In_Household__c || (!masterContact.C501_Is_In_Household__c && !mergeContact.C501_Is_In_Household__c))) {
                     
@@ -419,28 +421,6 @@ global with sharing class C501_MassMerge_SharedCode {
         return listSOSorted;
     }
 
-    /******************************************************************************************************
-    * @description String helper property for getNamespace() method.
-    *******************************************************************************************************/
-    private static string plainNamespace;
-
-    /*******************************************************************************************************
-    * @description Finds the namespace for the current context.
-    * @return string The current namespace as a string, or a blank string if we're not in a namespaced context.
-    ********************************************************************************************************/
-    public static string getNamespace() {
-        if (plainNamespace == null) {
-            string withDotNotation = C501_MassMerge_SharedCode.class.getName();
-
-            if (withDotNotation.contains('.')) {
-                plainNamespace = withDotNotation.substringBefore('.');
-            } else {
-                plainNamespace = '';
-            }
-        }
-        return plainNamespace;
-    }
-
     /*
         @Param:List of selectOption to be sort.
         @Return: Sorted list of selectOptions by Label
@@ -464,10 +444,12 @@ global with sharing class C501_MassMerge_SharedCode {
                 greaterSelectOption.add(SO);   
             }
         }
+
         list<selectOption> sortedSelectOptions = new list<selectOption>(); 
         sortedSelectOptions.addAll(selectOptionSortByLabel(lessSelectOption));
         sortedSelectOptions.add(pivotValue);
         sortedSelectOptions.addAll(selectOptionSortByLabel(greaterSelectOption));
+
         return SortedSelectOptions;
     }
 }
