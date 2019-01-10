@@ -150,7 +150,7 @@ global class C501_MM_Rule_Contact_NameDOB implements Schedulable {
                     accountsProcessed.add(mergeCandidate.Merge_Target_Account__c);
 
                     system.debug('***** C501_MM_Rule_Contact_NameDOB:execute AutoMerge - Id: ' + mergeCandidate.Id + ' Account__c: ' + mergeCandidate.Account__c + ' Merge_Target_Account__c: ' + mergeCandidate.Merge_Target_Account__c);
-/*
+
                     try {
                         c501MassMerge_SharedCode.AccountsMerge( new List<Account> {
                             new Account(
@@ -175,7 +175,7 @@ global class C501_MM_Rule_Contact_NameDOB implements Schedulable {
                         system.debug('***** C501_MM_Rule_Contact_NameDOB:execute Account__c: ' + mergeCandidate.Account__c + ' Merge_Target_Account__c: ' + mergeCandidate.Merge_Target_Account__c);
                         system.debug('***** C501_MM_Rule_Contact_NameDOB:execute General Exception: ' + String.valueOf(e) + '\n\n' + e.getStackTraceString());
                     }
-*/            }
+            }
 
             // Clear out all merge candidates based on processed Ids
             Map<Id, C501_Account_Merge__c> mapAccountMergesDelete = new Map<Id, C501_Account_Merge__c>();
