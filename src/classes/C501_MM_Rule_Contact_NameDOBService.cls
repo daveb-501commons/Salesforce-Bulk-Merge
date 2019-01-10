@@ -37,16 +37,18 @@ global class C501_MM_Rule_Contact_NameDOBService implements Schedulable {
 		// Perform all SOQL Queries outside of loop to avoid Salesforce Governor Limits: https://developer.salesforce.com/docs/atlas.en-us.apexcode.meta/apexcode/apex_gov_limits.htm
 		//
 
+        String mergeMetricName = 'Contact_NameDOBService';
+
         // Get Merge Metric
         List<C501_Merge_Metric__c> mergeMetrics = [
             SELECT Id, Name, Confidence__c, Total_Merge__c,
                 Enable__c, Enabled_Programs__c,
                 AutoMerge_Percentage__c
             FROM C501_Merge_Metric__c
-            WHERE Name = 'Contact_NameDOBService'];
+            WHERE Name = :mergeMetricName];
         if (mergeMetrics.isEmpty()) {
             mergeMetrics.add( new C501_Merge_Metric__c (
-                Name = 'Contact_NameDOBService',
+                Name = mergeMetricName,
                 Confidence__c = 100.0
             ));
 
@@ -95,9 +97,9 @@ global class C501_MM_Rule_Contact_NameDOBService implements Schedulable {
                 continue;
             }
 
-            uniqueId = mergeMetrics[0].Name + String.valueOf(minId) + String.valueOf(maxId);
+            uniqueId = mergeMetrics[0].Name + minId + maxId;
 
-            system.debug('*****C501_MM_Rule_Contact_NameDOBService::execute ByContacts Found - maxId: ' + maxId
+            system.debug('***** C501_MM_Rule_Contact_NameDOBService::execute ByContacts Found - maxId: ' + maxId
                 + ' minId: ' + minId + ' UniqueId: ' + uniqueId + ' Confidence: ' + mergeMetrics[0].Confidence__c
                 + 'MetricId: ' + mergeMetrics[0].Id);
 
@@ -129,7 +131,7 @@ global class C501_MM_Rule_Contact_NameDOBService implements Schedulable {
             for (C501_Account_Merge__c mergeCandidate : [
                 SELECT Id, Account__c, Merge_Target_Account__c, Merge_Confidence__c
                 FROM C501_Account_Merge__c
-                WHERE Merge_Metric__r.Name = 'Contact_NameDOBService'
+                WHERE Merge_Metric__r.Name = :mergeMetricName
                 LIMIT 200]) {
 
                     // Check whether to process based on merge confidence
@@ -149,7 +151,7 @@ global class C501_MM_Rule_Contact_NameDOBService implements Schedulable {
                     accountsProcessed.add(mergeCandidate.Account__c);
                     accountsProcessed.add(mergeCandidate.Merge_Target_Account__c);
 
-                    system.debug('***** AutoMerge - Account__c: ' + mergeCandidate.Account__c + ' Merge_Target_Account__c: ' + mergeCandidate.Merge_Target_Account__c);
+                    system.debug('***** C501_MM_Rule_Contact_NameDOBService::execute AutoMerge - Account__c: ' + mergeCandidate.Account__c + ' Merge_Target_Account__c: ' + mergeCandidate.Merge_Target_Account__c);
 
                     try {
                         c501MassMerge_SharedCode.AccountsMerge( new List<Account> {
@@ -172,8 +174,8 @@ global class C501_MM_Rule_Contact_NameDOBService implements Schedulable {
                         } );
                     } catch (Exception e) {
                         // NoOp for now since Sandbox has partial data
-                        system.debug('***** Account__c: ' + mergeCandidate.Account__c + ' Merge_Target_Account__c: ' + mergeCandidate.Merge_Target_Account__c);
-                        system.debug('General Exception: ' + String.valueOf(e) + '\n\n' + e.getStackTraceString());
+                        system.debug('***** C501_MM_Rule_Contact_NameDOBService::execute Account__c: ' + mergeCandidate.Account__c + ' Merge_Target_Account__c: ' + mergeCandidate.Merge_Target_Account__c);
+                        system.debug('***** C501_MM_Rule_Contact_NameDOBService::execute General Exception: ' + String.valueOf(e) + '\n\n' + e.getStackTraceString());
                     }
             }
 

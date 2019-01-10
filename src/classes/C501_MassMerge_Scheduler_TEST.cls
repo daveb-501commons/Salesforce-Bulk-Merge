@@ -82,8 +82,9 @@ class C501_MassMerge_Scheduler_TEST {
         C501_Merge_Metric__c mergeMetric = new C501_Merge_Metric__c(
             Name = 'MergeMetric',
             Enable__c = true,
+            Enabled_Programs__c = 'Energy Assistance',
             AutoMerge_Percentage__c = 100.0,
-            Enabled_Programs__c = 'Energy Assistance'
+            Enabled_AutoMerge_Programs__c = 'Energy Assistance'
         );
 
         insert mergeMetric;
@@ -136,8 +137,9 @@ class C501_MassMerge_Scheduler_TEST {
         List<C501_Merge_Metric__c> listMergeMetrics = new List<C501_Merge_Metric__c>();
         for (C501_Merge_Metric__c mergeMetric :[SELECT Id FROM C501_Merge_Metric__c]) {
             mergeMetric.Enable__c = true;
-            mergeMetric.AutoMerge_Percentage__c = 100.0;
             mergeMetric.Enabled_Programs__c = 'Energy Assistance';
+            mergeMetric.AutoMerge_Percentage__c = 100.0;
+            mergeMetric.Enabled_AutoMerge_Programs__c = 'Energy Assistance';
 
             listMergeMetrics.add(mergeMetric);
         }
@@ -155,8 +157,9 @@ class C501_MassMerge_Scheduler_TEST {
         List<C501_Merge_Metric__c> listMergeMetrics = new List<C501_Merge_Metric__c>();
         for (C501_Merge_Metric__c mergeMetric :[SELECT Id FROM C501_Merge_Metric__c]) {
             mergeMetric.Enable__c = true;
-            mergeMetric.AutoMerge_Percentage__c = 100.0;
             mergeMetric.Enabled_Programs__c = 'Energy Assistance';
+            mergeMetric.AutoMerge_Percentage__c = 100.0;
+            mergeMetric.Enabled_AutoMerge_Programs__c = 'Energy Assistance';
 
             listMergeMetrics.add(mergeMetric);
         }
