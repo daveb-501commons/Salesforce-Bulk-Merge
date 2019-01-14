@@ -288,7 +288,7 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
             list<C501_Account_Merge__c> listAccountsMergeIgnore = new list<C501_Account_Merge__c>();
             for (Account account : listAccounts) {
 
-                system.debug('C501_CTRL_MassMergeAccounts::SaveAccounts Update Merge Action - account.Id: ' + account.Id 
+                system.debug('***** C501_CTRL_MassMergeAccounts::SaveAccounts Update Merge Action - account.Id: ' + account.Id 
                     + ' account.C501_Merge_Action__c: ' + account.C501_Merge_Action__c);
 
                 if (account.Id != null && account.C501_Merge_Action__c == 'Merge') {

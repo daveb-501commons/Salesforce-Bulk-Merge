@@ -13,6 +13,8 @@ global class C501_MM_Rule_Contact_NameDOB implements Schedulable {
 
     global void execute(SchedulableContext SC) {
 
+        system.debug('***** C501_MM_Rule_Contact_NameDOB:execute');
+
 		//
 		// Perform all SOQL Queries outside of loop to avoid Salesforce Governor Limits: https://developer.salesforce.com/docs/atlas.en-us.apexcode.meta/apexcode/apex_gov_limits.htm
 		//
@@ -41,7 +43,7 @@ global class C501_MM_Rule_Contact_NameDOB implements Schedulable {
 
         Date dateUnder18 = date.today().addYears(-18);
         List<String> programs = mergeMetrics[0].Enabled_Programs__c.split(';');
-        system.debug('***** C501_MM_Rule_Contact_NameDOB:execute - Enabled_Programs__c: ' + programs);
+        system.debug('***** C501_MM_Rule_Contact_NameDOB:execute - Enabled_Programs__c: ' + String.valueOf(programs));
 
         //
         // Testing in Workbench tips
@@ -119,7 +121,8 @@ global class C501_MM_Rule_Contact_NameDOB implements Schedulable {
             for (C501_Service_Household__c serviceHousehold : [
                 SELECT C501_Household__c
                 FROM C501_Service_Household__c
-                WHERE C501_Household__c in :mergeAccountIds]) {
+                WHERE C501_Household__c in :mergeAccountIds
+                    AND C501_Program__c = :program]) {
 
                 accountsByProgram.add(serviceHousehold.C501_Household__c);
             }
@@ -129,7 +132,7 @@ global class C501_MM_Rule_Contact_NameDOB implements Schedulable {
                 SELECT Id, Account__c, Merge_Target_Account__c, Merge_Confidence__c
                 FROM C501_Account_Merge__c
                 WHERE Merge_Metric__r.Name = :mergeMetricName
-                    AND (Account__c in :accountsByProgram OR Merge_Target_Account__c in :accountsByProgram)
+                    AND (Account__c in :accountsByProgram AND Merge_Target_Account__c in :accountsByProgram)
                 LIMIT 200]) {
 
                     // Check whether to process based on merge confidence
@@ -150,7 +153,7 @@ global class C501_MM_Rule_Contact_NameDOB implements Schedulable {
                     accountsProcessed.add(mergeCandidate.Merge_Target_Account__c);
 
                     system.debug('***** C501_MM_Rule_Contact_NameDOB:execute AutoMerge - Id: ' + mergeCandidate.Id + ' Account__c: ' + mergeCandidate.Account__c + ' Merge_Target_Account__c: ' + mergeCandidate.Merge_Target_Account__c);
-
+/*
                     try {
                         c501MassMerge_SharedCode.AccountsMerge( new List<Account> {
                             new Account(
@@ -175,7 +178,7 @@ global class C501_MM_Rule_Contact_NameDOB implements Schedulable {
                         system.debug('***** C501_MM_Rule_Contact_NameDOB:execute Account__c: ' + mergeCandidate.Account__c + ' Merge_Target_Account__c: ' + mergeCandidate.Merge_Target_Account__c);
                         system.debug('***** C501_MM_Rule_Contact_NameDOB:execute General Exception: ' + String.valueOf(e) + '\n\n' + e.getStackTraceString());
                     }
-            }
+ */           }
 
             // Clear out all merge candidates based on processed Ids
             Map<Id, C501_Account_Merge__c> mapAccountMergesDelete = new Map<Id, C501_Account_Merge__c>();

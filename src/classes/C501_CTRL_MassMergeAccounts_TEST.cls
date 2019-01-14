@@ -165,7 +165,7 @@ private with sharing class C501_CTRL_MassMergeAccounts_TEST {
         ctrl.listAccounts[ctrl.listAccounts.size() - 1].C501_Merge_Action__c = 'Ignore';
         ctrl.SaveAccounts();
 
-        system.debug(ctrl.strSaveResults);
+        system.debug('***** C501_CTRL_MassMergeAccounts_TEST::CodeCoverageTests' + ctrl.strSaveResults);
         //System.Assert(ctrl.strSaveResults.startsWith('Error'));
         ctrl.ChangeProgram();
         ctrl.SaveAndCloseAccounts();      

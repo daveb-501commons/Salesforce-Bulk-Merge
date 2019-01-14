@@ -25,7 +25,9 @@
     }                      
 
     system.schedule('Contact_NameDOBService_0', '0 0 * * * ?', new C501_MM_Rule_Contact_NameDOBService());
-    system.schedule('Contact_NameDOBService_30', '0 30 * * * ?', new C501_MM_Rule_Contact_NameDOBService());
+
+    // Run daily at 1am (second = 0, min = 0, hour = 1)
+    system.schedule('Contact_NameDOBService_30', '0 0 1 * * ?', new C501_MM_Rule_Contact_NameDOBService());
 
 */
 

@@ -141,7 +141,7 @@ global with sharing class C501_MassMerge_SharedCode {
 
         for (Account account : listAccountsMerge) {
 
-            system.debug('C501_CTRL_MassMergeAccounts::SaveAccounts Merge Accounts - account.Id: ' + account.Id 
+            system.debug('***** C501_CTRL_MassMergeAccounts::SaveAccounts Merge Accounts - account.Id: ' + account.Id 
                 + ' account.C501_Merge_Action__c: ' + account.C501_Merge_Action__c);
 
             accountIds.add(account.Id);
@@ -358,7 +358,7 @@ global with sharing class C501_MassMerge_SharedCode {
     // the list of Accounts
     global list<SelectOption> listSOAccountsWithConfidence(String programName, Decimal fromMergeConfidence, Decimal toMergeConfidence) {
 
-        system.debug('C501_MassMerge_SharedCode::listSOAccountsWithConfidence - programName: ' + programName 
+        system.debug('***** C501_MassMerge_SharedCode::listSOAccountsWithConfidence - programName: ' + programName 
             + ' fromMergeConfidence: ' + fromMergeConfidence.toPlainString()
             + ' toMergeConfidence: ' + toMergeConfidence.toPlainString());
 
