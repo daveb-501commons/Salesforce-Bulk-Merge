@@ -4,61 +4,8 @@ class C501_MassMerge_Scheduler_TEST {
     public static String CRON_EXP = '0 0 0 3 9 ? 2022';
 
     @testSetup static void setup() {
-
-        list<Account> listAccounts = new list<Account>();   
-        integer cAccounts = 5;     
-        for (integer i = 0; i < cAccounts; i++) {
-            Account account = new Account(
-                
-                // Request Information
-                Name='Account Name'
-            );
-            listAccounts.add(account);
-        }                      
-
-        insert listAccounts;
-
-        List<C501_Service_Household__c> listServiceHouseholds = new List<C501_Service_Household__c>();
-        List<Contact> listContacts = new List<Contact>();
-        List<C501_Service_Contact__c> listServiceContacts = new List<C501_Service_Contact__c>();
-        for (Account account :listAccounts) {
-            listServiceHouseholds.add( new C501_Service_Household__c(
-                Name = 'Name ' + account.Id,
-                C501_Service_Id__c = 'C501_Service_Id__c ' + account.Id,
-                C501_Household__c = account.Id,
-                C501_Program__c = 'Energy Assistance',
-                C501_Start_Date__c = date.today()
-            ));
-
-            listContacts.add( new Contact(
-                LastName = 'Test',
-                FirstName = 'Test',
-                C501_FirstName_Initial__c = 'T',
-                AccountId = account.Id,
-                Birthdate = date.today().addYears(-21),
-                Gender__c = 'Female'
-            ));
-        }
-
-        insert listServiceHouseholds;
-        insert listContacts;
-
-        Integer serviceHouseholdIndex = 0;
-        for (Contact contact :listContacts) {
-            listServiceContacts.add( new C501_Service_Contact__c(
-                C501_Last_Name__c = 'Test',
-                C501_First_Name__c = 'Test',
-                C501_FirstName_Initial__c = 'T',
-                C501_Birthdate__c = date.today().addYears(-21),
-                C501_Gender__c = 'Female',
-                C501_Service_Household_Id__c = listServiceHouseholds[serviceHouseholdIndex].Id,
-                C501_Service_Id__c = listServiceHouseholds[serviceHouseholdIndex].C501_Service_Id__c,
-                C501_contact_Id__c = contact.Id
-            ));
-            serviceHouseholdIndex++;
-        }
-
-        insert listServiceContacts;
+        C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
+        c501MassMerge_SharedCode.TestSetupMerge();
     }
 
     static testmethod void C501_MassMerge_Scheduler_TEST_Schedule() {
@@ -91,6 +38,7 @@ class C501_MassMerge_Scheduler_TEST {
 
         C501_Account_Merge__c accountMerge = new C501_Account_Merge__c(
                 Unique_Id__c = 'Name ' + account1.Id,
+                Contact_Match_Id__c = 'ContactMatchId',
                 Merge_Metric__c = mergeMetric.Id,
                 Account__c = account1.Id,
                 Merge_Target_Account__c = account2.Id,
@@ -138,7 +86,7 @@ class C501_MassMerge_Scheduler_TEST {
         for (C501_Merge_Metric__c mergeMetric :[SELECT Id FROM C501_Merge_Metric__c]) {
             mergeMetric.Enable__c = true;
             mergeMetric.Enabled_Programs__c = 'Energy Assistance';
-            mergeMetric.AutoMerge_Percentage__c = 100.0;
+            mergeMetric.AutoMerge_Percentage__c = 90.0;
             mergeMetric.Enabled_AutoMerge_Programs__c = 'Energy Assistance';
 
             listMergeMetrics.add(mergeMetric);

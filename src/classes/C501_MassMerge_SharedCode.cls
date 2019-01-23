@@ -452,4 +452,251 @@ global with sharing class C501_MassMerge_SharedCode {
 
         return SortedSelectOptions;
     }
+
+    global void ProcessMergeCandidates(C501_Merge_Metric__c mergeMetric, Map<String, C501_Account_Merge__c> mergeAccounts, Set<Id> mergeAccountIds) {
+
+        // Create lookup for merge candidates
+        Map<Id, List<C501_Account_Merge__c>> mergeLookup = new Map<Id, List<C501_Account_Merge__c>>();
+        for (C501_Account_Merge__c mergeCandidateSource :mergeAccounts.values()) {
+            if (mergeLookup.containsKey(mergeCandidateSource.Account__c)) {
+                List<C501_Account_Merge__c> mergeCandidates = mergeLookup.remove(mergeCandidateSource.Account__c);
+                mergeCandidates.add(mergeCandidateSource);
+                mergeLookup.put(mergeCandidateSource.Account__c, mergeCandidates);
+            }
+            else {
+                mergeLookup.put(mergeCandidateSource.Account__c, new List<C501_Account_Merge__c> { mergeCandidateSource });
+            }
+
+            if (mergeLookup.containsKey(mergeCandidateSource.Merge_Target_Account__c)) {
+                List<C501_Account_Merge__c> mergeCandidates = mergeLookup.remove(mergeCandidateSource.Merge_Target_Account__c);
+                mergeCandidates.add(mergeCandidateSource);
+                mergeLookup.put(mergeCandidateSource.Merge_Target_Account__c, mergeCandidates);
+            }
+            else {
+                mergeLookup.put(mergeCandidateSource.Merge_Target_Account__c, new List<C501_Account_Merge__c> { mergeCandidateSource });
+            }
+        }
+
+        // Check potential candidates to make sure the contact match id matches between candidates with same household
+        String uniqueId;
+        for (C501_Account_Merge__c mergeCandidateSource :mergeAccounts.values()) {
+
+            system.debug('***** C501_MassMerge_SharedCode::ProcessMergeCandidates ' + mergeMetric.Name + ' Check Potential Merge Candidates - Source ' +
+                ' Contact Match: ' + mergeCandidateSource.Contact_Match_Id__c);
+
+            List<C501_Account_Merge__c> mergeCandidates = new List<C501_Account_Merge__c>();
+            if (mergeLookup.containsKey(mergeCandidateSource.Account__c)) {
+                mergeCandidates.addAll(mergeLookup.get(mergeCandidateSource.Account__c));
+            }
+
+            if (mergeLookup.containsKey(mergeCandidateSource.Merge_Target_Account__c)) {
+                mergeCandidates.addAll(mergeLookup.get(mergeCandidateSource.Merge_Target_Account__c));
+            }
+
+            for (C501_Account_Merge__c mergeCandidateTarget :mergeCandidates) {
+
+                system.debug('***** C501_MassMerge_SharedCode::ProcessMergeCandidates ' + mergeMetric.Name + ' Check Potential Merge Candidates - Target ' +
+                    ' Contact Match: ' + mergeCandidateTarget.Contact_Match_Id__c);
+
+                if ( (mergeCandidateSource.Account__c == mergeCandidateTarget.Account__c ||
+                    mergeCandidateSource.Account__c == mergeCandidateTarget.Merge_Target_Account__c ||
+                    mergeCandidateSource.Merge_Target_Account__c == mergeCandidateTarget.Account__c ||
+                    mergeCandidateSource.Merge_Target_Account__c == mergeCandidateTarget.Merge_Target_Account__c) &&
+                    mergeCandidateSource.Contact_Match_Id__c <> mergeCandidateTarget.Contact_Match_Id__c) {
+
+                    system.debug('***** C501_MassMerge_SharedCode::ProcessMergeCandidates ' + mergeMetric.Name + ' Check Potential Merge Candidates - Remove Candidates based on List' +
+                        ' Source Contact Match: ' + mergeCandidateSource.Contact_Match_Id__c + ' Target Contact Match: ' + mergeCandidateTarget.Contact_Match_Id__c);
+
+                    uniqueId = mergeMetric.Name + mergeCandidateTarget.Merge_Target_Account__c + mergeCandidateTarget.Account__c;
+                    mergeAccounts.remove(uniqueId);
+                    mergeAccountIds.remove(mergeCandidateTarget.Merge_Target_Account__c);
+                    mergeAccountIds.remove(mergeCandidateTarget.Account__c);
+                }
+            }
+        }
+
+        //
+		// Perform all DML (Data Manipulation Language) calls (insert, update, merge, delete, restore) outside of loop to avoid Salesforce Governor Limits: https://developer.salesforce.com/docs/atlas.en-us.apexcode.meta/apexcode/apex_gov_limits.htm
+        //
+		if (!mergeAccounts.isEmpty()) {
+			Database.SaveResult[] insertResults = Database.insert(mergeAccounts.values(), false);
+
+            // TBD - Look for anything other than Duplicate Id Error on Unique_Id__c which is expected
+		}
+
+        // Check if AutoMerge Enabled
+        if (mergeMetric.AutoMerge_Percentage__c <= 0.0 || String.isEmpty(mergeMetric.Enabled_AutoMerge_Programs__c)) {
+            return;
+        }
+
+        List<String> programsAutoMerge = mergeMetric.Enabled_AutoMerge_Programs__c.split(';');
+
+        // Check to AutoMerge
+        Integer mergeAutoMergeAttemptsRemaining = 5;            // SOQL Governor LIMIT issue LIMIT merge attempts to 5 because each Merge Attempt is currently 10 SOQL Queries
+        for (String program :programsAutoMerge) {
+
+            Set<Id> accountsByProgram = new Set<Id>();
+            for (C501_Service_Household__c serviceHousehold : [
+                SELECT C501_Household__c
+                FROM C501_Service_Household__c
+                WHERE C501_Household__c in :mergeAccountIds
+                    AND C501_Program__c = :program]) {
+
+                accountsByProgram.add(serviceHousehold.C501_Household__c);
+            }
+
+            Set<Id> accountsProcessed = new Set<Id>();
+            for (C501_Account_Merge__c mergeCandidate : [
+                SELECT Id, Account__c, Merge_Target_Account__c, Merge_Confidence__c
+                FROM C501_Account_Merge__c
+                WHERE Merge_Metric__r.Name = :mergeMetric.Name
+                    AND (Account__c in :accountsByProgram AND Merge_Target_Account__c in :accountsByProgram)]) {
+
+                    // Check whether to process based on merge confidence
+                    if (mergeMetric.AutoMerge_Percentage__c < mergeCandidate.Merge_Confidence__c) {
+                        continue;
+                    }
+
+                    // Check whether account Id merge already attempted
+                    if (accountsProcessed.contains(mergeCandidate.Account__c) || accountsProcessed.contains(mergeCandidate.Merge_Target_Account__c)) {
+                        continue;
+                    }
+
+                    if (mergeAutoMergeAttemptsRemaining-- <= 0) {
+                        break;
+                    }
+
+                    accountsProcessed.add(mergeCandidate.Account__c);
+                    accountsProcessed.add(mergeCandidate.Merge_Target_Account__c);
+
+                    system.debug('***** C501_MassMerge_SharedCode::ProcessMergeCandidates AutoMerge ' + mergeMetric.Name + ' - Account__c: ' + mergeCandidate.Account__c + ' Merge_Target_Account__c: ' + mergeCandidate.Merge_Target_Account__c);
+
+                    try {
+                        AccountsMerge( new List<Account> {
+                            new Account(
+                                Id = mergeCandidate.Account__c,
+                                C501_Merge_Action__c = 'Merge',
+                                C501_Merge_Confidence__c = mergeCandidate.Merge_Confidence__c,
+                                C501_Merge_Target__c = mergeCandidate.Merge_Target_Account__c,
+                                C501_Merge_Metric_Name__c = mergeMetric.Name,
+                                C501_Merge_Account__c = mergeCandidate.Id
+                            ),
+                            new Account(
+                                Id = mergeCandidate.Merge_Target_Account__c,
+                                C501_Merge_Action__c = 'Merge',
+                                C501_Merge_Confidence__c = mergeCandidate.Merge_Confidence__c,
+                                C501_Merge_Target__c = mergeCandidate.Merge_Target_Account__c,
+                                C501_Merge_Metric_Name__c = mergeMetric.Name,
+                                C501_Merge_Account__c = mergeCandidate.Id
+                            )
+                        } );
+                    } catch (Exception e) {
+                        // NoOp for now since Sandbox has partial data
+                        system.debug('***** C501_MassMerge_SharedCode::ProcessMergeCandidates ' + mergeMetric.Name + ' Account__c: ' + mergeCandidate.Account__c + ' Merge_Target_Account__c: ' + mergeCandidate.Merge_Target_Account__c);
+                        system.debug('***** C501_MassMerge_SharedCode::ProcessMergeCandidates ' + mergeMetric.Name + ' General Exception: ' + String.valueOf(e) + '\n\n' + e.getStackTraceString());
+                    }
+            }
+
+            // Clear out all merge candidates based on processed Ids
+            Map<Id, C501_Account_Merge__c> mapAccountMergesDelete = new Map<Id, C501_Account_Merge__c>();
+            for (C501_Account_Merge__c mergeRelated : [
+                SELECT Id
+                FROM C501_Account_Merge__c
+                WHERE Account__c in :accountsProcessed or Merge_Target_Account__c in :accountsProcessed]) {
+                    mapAccountMergesDelete.put(mergeRelated.Id, mergeRelated);
+                }
+
+            if (!mapAccountMergesDelete.isEmpty()) {
+                delete mapAccountMergesDelete.values();
+            }
+        }
+    }
+
+    global void TestSetupMerge() {
+        list<Account> listAccounts = new list<Account>();   
+        integer cAccounts = 9;     
+        for (integer i = 0; i < cAccounts; i++) {
+            Account account = new Account(
+                
+                // Request Information
+                Name='Account Name'
+            );
+            listAccounts.add(account);
+        }                      
+
+        insert listAccounts;
+
+        Map<Id, C501_Service_Household__c> listServiceHouseholds = new Map<Id, C501_Service_Household__c>();
+        List<Contact> listContacts = new List<Contact>();
+        List<C501_Service_Contact__c> listServiceContacts = new List<C501_Service_Contact__c>();
+        Integer insertContactMode = 1;
+        for (Account account :listAccounts) {
+
+            listServiceHouseholds.put(account.Id, new C501_Service_Household__c(
+                Name = 'Name ' + account.Id,
+                C501_Service_Id__c = 'C501_Service_Id__c ' + account.Id,
+                C501_Household__c = account.Id,
+                C501_Program__c = 'Energy Assistance',
+                C501_Start_Date__c = date.today()
+            ));
+
+            if (insertContactMode == 1 || insertContactMode == 2) {
+                listContacts.add( new Contact(
+                    LastName = 'Test1',
+                    FirstName = 'Test1',
+                    C501_FirstName_Initial__c = 'T',
+                    AccountId = account.Id,
+                    Birthdate = date.today().addYears(-21),
+                    Gender__c = 'Female'
+                ));
+            }
+
+            if (insertContactMode == 2 || insertContactMode == 3) {
+                listContacts.add( new Contact(
+                    LastName = 'Test2',
+                    FirstName = 'Test2',
+                    C501_FirstName_Initial__c = 'T',
+                    AccountId = account.Id,
+                    Birthdate = date.today().addYears(-21),
+                    Gender__c = 'Male'
+                ));
+            }
+
+            insertContactMode = (insertContactMode >= 3) ? 1 : insertContactMode + 1;
+        }
+
+        insert listServiceHouseholds.values();
+        insert listContacts;
+
+        for (Contact contact :listContacts) {
+
+            C501_Service_Household__c serviceHousehold = listServiceHouseholds.get(contact.AccountId);
+
+            listServiceContacts.add( new C501_Service_Contact__c(
+                C501_Last_Name__c = contact.LastName,
+                C501_First_Name__c = contact.FirstName,
+                C501_FirstName_Initial__c = contact.C501_FirstName_Initial__c,
+                C501_Birthdate__c = contact.Birthdate,
+                C501_Gender__c = contact.Gender__c,
+                C501_Service_Household_Id__c = serviceHousehold.Id,
+                C501_Service_Id__c = serviceHousehold.C501_Service_Id__c,
+                C501_Contact_Id__c = contact.Id
+            ));
+        }
+
+        insert listServiceContacts;
+
+        // Print Structure
+        PrintSalesforceStructure();
+    }
+
+    global void PrintSalesforceStructure() {
+
+        system.debug('***** C501_MassMerge_SharedCode::PrintSalesforceStructure');
+
+        system.debug('***** C501_MassMerge_SharedCode::PrintSalesforceStructure - Account ' + String.valueOf([select Id, Name from Account]));
+        system.debug('***** C501_MassMerge_SharedCode::PrintSalesforceStructure - Contact ' + String.valueOf([select Id, AccountId, C501_FirstName_Initial__c, LastName, Birthdate, Gender__c from Contact]));
+        system.debug('***** C501_MassMerge_SharedCode::PrintSalesforceStructure - C501_Service_Household__c ' + String.valueOf([select Id, C501_Household__c, Name from C501_Service_Household__c]));
+        system.debug('***** C501_MassMerge_SharedCode::PrintSalesforceStructure - C501_Service_Contact__c ' + String.valueOf([select Id, C501_Contact_Id__c, C501_FirstName_Initial__c, C501_Last_Name__c, C501_Birthdate__c, C501_Gender__c from C501_Service_Contact__c]));
+    }
 }

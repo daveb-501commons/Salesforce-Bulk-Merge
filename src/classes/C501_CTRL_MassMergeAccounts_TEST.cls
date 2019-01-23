@@ -32,61 +32,11 @@
 private with sharing class C501_CTRL_MassMergeAccounts_TEST {
     
     @testSetup static void setup() {
+        C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
+        c501MassMerge_SharedCode.TestSetupMerge();
 
-        list<Account> listAccounts = new list<Account>();   
-        integer cAccounts = 5;     
-        for (integer i = 0; i < cAccounts; i++) {
-            Account account = new Account(
-                
-                // Request Information
-                Name='Account Name'
-            );
-            listAccounts.add(account);
-        }                      
-
-        insert listAccounts;
-
-        List<C501_Service_Household__c> listServiceHouseholds = new List<C501_Service_Household__c>();
-        List<Contact> listContacts = new List<Contact>();
-        List<C501_Service_Contact__c> listServiceContacts = new List<C501_Service_Contact__c>();
-        for (Account account :listAccounts) {
-            listServiceHouseholds.add( new C501_Service_Household__c(
-                Name = 'Name ' + account.Id,
-                C501_Service_Id__c = 'C501_Service_Id__c ' + account.Id,
-                C501_Household__c = account.Id,
-                C501_Program__c = 'Energy Assistance',
-                C501_Start_Date__c = date.today()
-            ));
-
-            listContacts.add( new Contact(
-                LastName = 'Test',
-                FirstName = 'Test',
-                C501_FirstName_Initial__c = 'T',
-                AccountId = account.Id,
-                Birthdate = date.today().addYears(-21),
-                Gender__c = 'Female'
-            ));
-        }
-
-        insert listServiceHouseholds;
-        insert listContacts;
-
-        Integer serviceHouseholdIndex = 0;
-        for (Contact contact :listContacts) {
-            listServiceContacts.add( new C501_Service_Contact__c(
-                C501_Last_Name__c = 'Test',
-                C501_First_Name__c = 'Test',
-                C501_FirstName_Initial__c = 'T',
-                C501_Birthdate__c = date.today().addYears(-21),
-                C501_Gender__c = 'Female',
-                C501_Service_Household_Id__c = listServiceHouseholds[serviceHouseholdIndex].Id,
-                C501_Service_Id__c = listServiceHouseholds[serviceHouseholdIndex].C501_Service_Id__c,
-                C501_contact_Id__c = contact.Id
-            ));
-            serviceHouseholdIndex++;
-        }
-
-        insert listServiceContacts;
+        C501_MM_Rule_Contact_NameDOB scheduleNameDOB = new C501_MM_Rule_Contact_NameDOB();
+        scheduleNameDOB.execute(null);
 
         C501_MM_Rule_Contact_NameDOBService scheduleNameDOBService = new C501_MM_Rule_Contact_NameDOBService();
         scheduleNameDOBService.execute(null);
@@ -102,10 +52,34 @@ private with sharing class C501_CTRL_MassMergeAccounts_TEST {
 
         update listMergeMetrics;
 
+        // Create Account Merges
+        scheduleNameDOB.execute(null);
+        scheduleNameDOBService.execute(null);
+
+        // Attempt to create Account Merges again
+        scheduleNameDOB.execute(null);
         scheduleNameDOBService.execute(null);
     }
 
     //==================== TEST METHOD(s) ======================================
+
+    private static testmethod void MergeRemoveNotCandidateTests() {
+
+        List<C501_Account_Merge__c> accountMerges = [select Id, Contact_Match_Id__c from C501_Account_Merge__c];
+
+        for (C501_Account_Merge__c accountMerge :accountMerges) {
+            accountMerge.Contact_Match_Id__c = accountMerge.Id;
+        }
+
+        update accountMerges;
+
+        C501_MM_Rule_Contact_NameDOB scheduleNameDOB = new C501_MM_Rule_Contact_NameDOB();
+        scheduleNameDOB.execute(null);
+
+        C501_MM_Rule_Contact_NameDOBService scheduleNameDOBService = new C501_MM_Rule_Contact_NameDOBService();
+        scheduleNameDOBService.execute(null);
+    }
+
     private static testmethod void CodeCoverageTests() {
 
         Id masterAccountId = [SELECT Id FROM Account ORDER BY Id ASC LIMIT 1].Id;

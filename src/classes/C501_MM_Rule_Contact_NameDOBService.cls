@@ -45,7 +45,8 @@ global class C501_MM_Rule_Contact_NameDOBService implements Schedulable {
         List<C501_Merge_Metric__c> mergeMetrics = [
             SELECT Id, Name, Confidence__c, Total_Merge__c,
                 Enable__c, Enabled_Programs__c,
-                AutoMerge_Percentage__c
+                AutoMerge_Percentage__c,
+                Enabled_AutoMerge_Programs__c
             FROM C501_Merge_Metric__c
             WHERE Name = :mergeMetricName];
         if (mergeMetrics.isEmpty()) {
@@ -89,7 +90,8 @@ global class C501_MM_Rule_Contact_NameDOBService implements Schedulable {
             ORDER BY Count(C501_Service_Household_Id__r.C501_Household__c) DESC];
 
         Map<String, C501_Account_Merge__c> mergeAccounts = new Map<String, C501_Account_Merge__c>();
-        String uniqueId, maxId, minId;
+        Set<Id> mergeAccountIds = new Set<Id>();
+        String uniqueId, contactMatchId, maxId, minId;
         for (AggregateResult result :allAggregatedByServiceContacts)  {
 
             maxId = result.get('MaxAccountId').toString();
@@ -99,7 +101,15 @@ global class C501_MM_Rule_Contact_NameDOBService implements Schedulable {
                 continue;
             }
 
-            uniqueId = mergeMetrics[0].Name + minId + maxId;
+            contactMatchId = result.get('C501_Last_Name__c').toString() + 
+                result.get('C501_FirstName_Initial__c').toString() +
+                result.get('C501_Gender__c').toString() +
+                result.get('C501_Birthdate__c').toString();
+
+            mergeAccountIds.add(maxId);
+            mergeAccountIds.add(minId);
+
+            uniqueId = mergeMetricName + minId + maxId;
 
             system.debug('***** C501_MM_Rule_Contact_NameDOBService::execute ByContacts Found - maxId: ' + maxId
                 + ' minId: ' + minId + ' UniqueId: ' + uniqueId + ' Confidence: ' + mergeMetrics[0].Confidence__c
@@ -110,89 +120,12 @@ global class C501_MM_Rule_Contact_NameDOBService implements Schedulable {
                 Merge_Confidence__c = mergeMetrics[0].Confidence__c,
                 Account__c = minId,
                 Merge_Target_Account__c = maxId,
-                Merge_Metric__c = mergeMetrics[0].Id
+                Merge_Metric__c = mergeMetrics[0].Id,
+                Contact_Match_Id__c = contactMatchId
             ));
         }
 
-        //
-		// Perform all DML (Data Manipulation Language) calls (insert, update, merge, delete, restore) outside of loop to avoid Salesforce Governor Limits: https://developer.salesforce.com/docs/atlas.en-us.apexcode.meta/apexcode/apex_gov_limits.htm
-        //
-		if (!mergeAccounts.isEmpty()) {
-			Database.SaveResult[] insertResults = Database.insert(mergeAccounts.values(), false);
-
-            // TBD - Look for anything other than Duplicate Id Error on Unique_Id__c which is expected
-		}
-
         C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
-
-        // Check to AutoMerge
-        Integer mergeAutoMergeAttemptsRemaining = 5;            // SOQL Governor LIMIT issue LIMIT merge attempts to 5 because each Merge Attempt is currently 10 SOQL Queries
-        if (mergeMetrics[0].AutoMerge_Percentage__c > 0.0) {
-
-            Set<Id> accountsProcessed = new Set<Id>();
-            for (C501_Account_Merge__c mergeCandidate : [
-                SELECT Id, Account__c, Merge_Target_Account__c, Merge_Confidence__c
-                FROM C501_Account_Merge__c
-                WHERE Merge_Metric__r.Name = :mergeMetricName
-                LIMIT 200]) {
-
-                    // Check whether to process based on merge confidence
-                    if (mergeMetrics[0].AutoMerge_Percentage__c < mergeCandidate.Merge_Confidence__c) {
-                        continue;
-                    }
-
-                    // Check whether account Id merge already attempted
-                    if (accountsProcessed.contains(mergeCandidate.Account__c) || accountsProcessed.contains(mergeCandidate.Merge_Target_Account__c)) {
-                        continue;
-                    }
-
-                    if (mergeAutoMergeAttemptsRemaining-- <= 0) {
-                        break;
-                    }
-
-                    accountsProcessed.add(mergeCandidate.Account__c);
-                    accountsProcessed.add(mergeCandidate.Merge_Target_Account__c);
-
-                    system.debug('***** C501_MM_Rule_Contact_NameDOBService::execute AutoMerge - Account__c: ' + mergeCandidate.Account__c + ' Merge_Target_Account__c: ' + mergeCandidate.Merge_Target_Account__c);
-
-                    try {
-                        c501MassMerge_SharedCode.AccountsMerge( new List<Account> {
-                            new Account(
-                                Id = mergeCandidate.Account__c,
-                                C501_Merge_Action__c = 'Merge',
-                                C501_Merge_Confidence__c = mergeCandidate.Merge_Confidence__c,
-                                C501_Merge_Target__c = mergeCandidate.Merge_Target_Account__c,
-                                C501_Merge_Metric_Name__c = mergeMetrics[0].Name,
-                                C501_Merge_Account__c = mergeCandidate.Id
-                            ),
-                            new Account(
-                                Id = mergeCandidate.Merge_Target_Account__c,
-                                C501_Merge_Action__c = 'Merge',
-                                C501_Merge_Confidence__c = mergeCandidate.Merge_Confidence__c,
-                                C501_Merge_Target__c = mergeCandidate.Merge_Target_Account__c,
-                                C501_Merge_Metric_Name__c = mergeMetrics[0].Name,
-                                C501_Merge_Account__c = mergeCandidate.Id
-                            )
-                        } );
-                    } catch (Exception e) {
-                        // NoOp for now since Sandbox has partial data
-                        system.debug('***** C501_MM_Rule_Contact_NameDOBService::execute Account__c: ' + mergeCandidate.Account__c + ' Merge_Target_Account__c: ' + mergeCandidate.Merge_Target_Account__c);
-                        system.debug('***** C501_MM_Rule_Contact_NameDOBService::execute General Exception: ' + String.valueOf(e) + '\n\n' + e.getStackTraceString());
-                    }
-            }
-
-            // Clear out all merge candidates based on processed Ids
-            Map<Id, C501_Account_Merge__c> mapAccountMergesDelete = new Map<Id, C501_Account_Merge__c>();
-            for (C501_Account_Merge__c mergeRelated : [
-                SELECT Id
-                FROM C501_Account_Merge__c
-                WHERE Account__c in :accountsProcessed or Merge_Target_Account__c in :accountsProcessed]) {
-                    mapAccountMergesDelete.put(mergeRelated.Id, mergeRelated);
-                }
-
-            if (!mapAccountMergesDelete.isEmpty()) {
-                delete mapAccountMergesDelete.values();
-            }
-        }
+        c501MassMerge_SharedCode.ProcessMergeCandidates(mergeMetrics[0], mergeAccounts, mergeAccountIds);
    }
 }
