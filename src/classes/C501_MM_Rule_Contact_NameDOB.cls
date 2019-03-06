@@ -47,9 +47,9 @@ global class C501_MM_Rule_Contact_NameDOB implements Schedulable {
 
         //
         // Testing in Workbench tips
-        // ('Energy Assistance','Housing Pool')
+        //
         //      and C501_Birthdate__c <> null and C501_Birthdate__c < 2000-01-01
-        //      and C501_Service_Household_Id__r.C501_Program__c in ('Energy Assistance','Housing Pool')
+        //      and C501_Service_Household_Id__r.C501_Program__c in ('Energy Assistance')
         // add LIMIT 10 at the end
 
 		AggregateResult[] allAggregatedByServiceContacts = [
@@ -66,7 +66,7 @@ global class C501_MM_Rule_Contact_NameDOB implements Schedulable {
                 and C501_Birthdate__c <> null and C501_Birthdate__c < :dateUnder18
                 and C501_Service_Household_Id__r.C501_Program__c in :programs
             GROUP BY C501_FirstName_Initial__c,
-                C501_Last_Name__c, 
+                C501_Last_Name__c,
                 C501_Birthdate__c,
                 C501_Gender__c
             HAVING Count(C501_Service_Household_Id__r.C501_Household__c) > 1
