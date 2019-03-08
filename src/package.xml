@@ -3,6 +3,7 @@
     <types>
         <members>C501_CTRL_MassMergeAccounts</members>
         <members>C501_CTRL_MassMergeAccounts_TEST</members>
+        <members>C501_MM_Rule_Contact_FullNameDOBFullHH</members>
         <members>C501_MM_Rule_Contact_NameDOB</members>
         <members>C501_MM_Rule_Contact_NameDOBService</members>
         <members>C501_MassMerge_Scheduler_TEST</members>
