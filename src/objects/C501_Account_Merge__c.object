@@ -76,6 +76,16 @@
         <unique>false</unique>
     </fields>
     <fields>
+        <fullName>Merge_Metric_Name__c</fullName>
+        <externalId>false</externalId>
+        <label>Merge Metric Name</label>
+        <length>255</length>
+        <required>true</required>
+        <trackTrending>false</trackTrending>
+        <type>Text</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
         <fullName>Merge_Action__c</fullName>
         <externalId>false</externalId>
         <label>Merge Action</label>

@@ -90,7 +90,7 @@
                 <div class="slds-grid">
                     <div class="slds-col--padded slds-form-element slds-size--1-of-3">
                         <apex:outputLabel for="ddlAccounts" styleClass="slds-form-element__label" >
-                            Household [Required]
+                            Household
                         </apex:outputLabel>
                         <apex:selectList id="ddlAccounts" value="{!accountFilter.Id}" required="false" size="1" styleClass="slds-select" disabled="{!listSOAccounts.size=1}">
                             <apex:actionSupport immediate="false" event="onchange" rerender="ddlAccounts,ddlPrograms,tblAccounts" status="retrieveStatus" action="{!ChangeAccount}" />

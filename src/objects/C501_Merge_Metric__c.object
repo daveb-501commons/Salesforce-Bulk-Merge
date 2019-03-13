@@ -63,6 +63,19 @@
         <type>Percent</type>
     </fields>
     <fields>
+        <fullName>AutoMerge_Programs__c</fullName>
+        <externalId>false</externalId>
+        <label>AutoMerge Programs</label>
+        <required>false</required>
+        <trackTrending>false</trackTrending>
+        <type>MultiselectPicklist</type>
+        <valueSet>
+            <restricted>true</restricted>
+            <valueSetName>C501_Intake_Programs</valueSetName>
+        </valueSet>
+        <visibleLines>4</visibleLines>
+    </fields>
+    <fields>
         <fullName>Confidence__c</fullName>
         <description>Confidence percentage for potential merge candidates found by this rule.</description>
         <externalId>false</externalId>

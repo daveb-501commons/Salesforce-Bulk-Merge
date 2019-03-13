@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2016, Salesforce.org
+    Copyright (c) 2019, 501Commons.org
     All rights reserved.
     
     Redistribution and use in source and binary forms, with or without
@@ -173,54 +173,79 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
     // helper function that the client can override, to query for the appropriate fields in Accounts.
     global virtual void FillListAccounts() {
 
-        // if they haven't yet picked an account
-        if (accountFilter.Id == null) return;           
-        
 		Map<Id,C501_Account_Merge__c> accountsMerge = new Map<Id,C501_Account_Merge__c>();
-        accountsMerge.put(accountFilter.Id, new C501_Account_Merge__c(
-            Merge_Confidence__c = 100.0));
 
-		for(C501_Account_Merge__c accountMerge : [
-			SELECT Id, Account__c, Merge_Target_Account__c, Merge_Confidence__c, Merge_Action__c, Merge_Metric__c
-			FROM C501_Account_Merge__c
-			WHERE Account__c = :accountFilter.Id AND isDeleted = false]) {
-        		accountsMerge.put(accountMerge.Merge_Target_Account__c, new C501_Account_Merge__c(
-                    Id = accountMerge.Id,
-                    Merge_Action__c = accountMerge.Merge_Action__c,
-                    Merge_Confidence__c = accountMerge.Merge_Confidence__c,
-                    Merge_Target_Account__c = accountMerge.Merge_Target_Account__c,
-                    Account__c = accountMerge.Account__c,
-                    Merge_Metric__c = accountMerge.Merge_Metric__c
-                ));
-		}
+        if (accountFilter.Id <> null) {
+        
+            accountsMerge.put(accountFilter.Id, new C501_Account_Merge__c(
+                Merge_Confidence__c = 100.0));
+
+            for(C501_Account_Merge__c accountMerge : [
+                SELECT Id, Account__c, Merge_Target_Account__c, Merge_Confidence__c, Merge_Action__c, Merge_Metric__c, Merge_Metric__r.Name
+                FROM C501_Account_Merge__c
+                WHERE (Account__c = :accountFilter.Id OR Merge_Target_Account__c = :accountFilter.Id) AND isDeleted = false]) {
+                    accountsMerge.put(accountMerge.Merge_Target_Account__c, new C501_Account_Merge__c(
+                        Id = accountMerge.Id,
+                        Merge_Action__c = accountMerge.Merge_Action__c,
+                        Merge_Confidence__c = accountMerge.Merge_Confidence__c,
+                        Merge_Target_Account__c = accountMerge.Merge_Target_Account__c,
+                        Account__c = accountMerge.Account__c,
+                        Merge_Metric__c = accountMerge.Merge_Metric__c,
+                        Merge_Metric_Name__c = accountMerge.Merge_Metric__r.Name
+                    ));
+            }
+        }
+        else {
+
+            Set<String> accountIds = new Set<String>();
+            for (SelectOption option : listSOAccounts) {
+                accountIds.add(option.getValue());
+
+                // Performance: Only allow 50 at a time to load in the webpage
+                if (accountIds.size() >= 50) {
+                    break;
+                }
+            }
+
+            Integer mergeIndex = 1;
+            String mergeBuffer = '0';
+            for(C501_Account_Merge__c accountMerge : [
+                SELECT Id, Account__c, Merge_Target_Account__c, Merge_Confidence__c, Merge_Action__c, Merge_Metric__c, Merge_Metric__r.Name
+                FROM C501_Account_Merge__c
+                WHERE (Account__c in :accountIds OR Merge_Target_Account__c in :accountIds) AND isDeleted = false
+                ORDER BY Account__r.Name ASC]) {
+
+                    accountsMerge.put(accountMerge.Account__c, new C501_Account_Merge__c(
+                        Merge_Confidence__c = 100.0,
+                        Merge_Metric__c = accountMerge.Merge_Metric__c,
+                        Merge_Metric_Name__c = 'Merge ' + mergeBuffer + mergeIndex + ' ' + accountMerge.Merge_Metric__r.Name
+                    ));
+
+                    accountsMerge.put(accountMerge.Merge_Target_Account__c, new C501_Account_Merge__c(
+                        Id = accountMerge.Id,
+                        Merge_Action__c = accountMerge.Merge_Action__c,
+                        Merge_Confidence__c = accountMerge.Merge_Confidence__c,
+                        Merge_Target_Account__c = accountMerge.Merge_Target_Account__c,
+                        Account__c = accountMerge.Account__c,
+                        Merge_Metric__c = accountMerge.Merge_Metric__c,
+                        Merge_Metric_Name__c = 'Merge ' + mergeBuffer + mergeIndex + ' ' + accountMerge.Merge_Metric__r.Name
+                    ));
+
+                    mergeIndex++;
+                    if (mergeIndex >= 10) {
+                        mergeBuffer = '';
+                    }
+            }
+        }
 
         string strSoql = 
             'SELECT ' + String.join(listStrFields, ',');
 
         Set<Id> accountsMergeIds = accountsMerge.keySet();
         strSoql += ' FROM Account WHERE Id in :accountsMergeIds';
-        
-/*        if (accountFilter.C501_Merge_Program__c != null)
-            strSoql += ' and (C501_Merge_Program__c = :accountFilter.C501_Merge_Program__c or C501_Merge_Program__c = null) ';
-
-        if (accountFilter.C501_Merge_Confidence_From__c != null) {
-            strSoql += ' and C501_C501_Merge_Confidence__c >= :accountFilter.C501_Merge_Confidence_From__c ';
-        }
-        if (accountFilter.C501_Merge_Confidence_To__c != null) {
-            strSoql += ' and C501_C501_Merge_Confidence__c <= :accountFilter.C501_Merge_Confidence_To__c ';
-        }
-*/
-        strSoql += ' order by Account.Name ASC NULLS FIRST';
+        strSoql += ' order by C501_Merge_Metric_Name__c ASC NULLS FIRST';
         
         listAccounts = Database.Query(strSoql);
-
-        // Get Merge Metrics
-        Map<Id, String> mergeMetrics = new Map<Id, String>();
-        for(C501_Merge_Metric__c mergeMetric : [
-            SELECT Id, Name
-            FROM C501_Merge_Metric__c]) {
-                mergeMetrics.put(mergeMetric.Id, mergeMetric.Name);
-        }
 
         for ( Account account :listAccounts ) {
             if (accountsMerge.containsKey(account.Id)) {
@@ -229,15 +254,13 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
                 account.C501_Merge_Confidence__c = mergeAccount.Merge_Confidence__c;
                 account.C501_Merge_Target__c = mergeAccount.Merge_Target_Account__c;
                 account.C501_Merge_Account__c = mergeAccount.Id;
-
-                if (mergeMetrics.containsKey(mergeAccount.Merge_Metric__c)) {
-                    account.C501_Merge_Metric_Name__c = mergeMetrics.get(mergeAccount.Merge_Metric__c);
-                }
-                else {
-                    account.C501_Merge_Metric_Name__c = 'Selected Household';
-                }
+                account.C501_Merge_Metric_Name__c = mergeAccount.Merge_Metric_Name__c;
             }
         }
+
+        // Update Accounts w/ Merge fields then query to get the correct sort order by Metric Name
+        update listAccounts;
+        listAccounts = Database.Query(strSoql);
     }
     
     global Boolean fHasListAccounts {
@@ -283,8 +306,7 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
         strSaveResults = null;
         
         try {
-            // Step 1: Update accounts with Merge Action
-            list<Account> listAccountsMerge = new list<Account>();
+            Map<String, List<Account>> listAccountsMerge = new Map<String, List<Account>>();
             list<C501_Account_Merge__c> listAccountsMergeIgnore = new list<C501_Account_Merge__c>();
             for (Account account : listAccounts) {
 
@@ -296,7 +318,14 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
                     // we couldn't reliably mark dirty records in all scenarios,
                     // so we've decided it is better to always update all records.
                     //if (setAccountsIdDirty.contains(account.Id)) 
-                    listAccountsMerge.add(account);
+                    if (listAccountsMerge.containsKey(account.C501_Merge_Metric_Name__c)) {
+                        List<Account> accounts = listAccountsMerge.remove(account.C501_Merge_Metric_Name__c);
+                        accounts.add(account);
+                        listAccountsMerge.put(account.C501_Merge_Metric_Name__c, accounts);
+                    }
+                    else {
+                        listAccountsMerge.put(account.C501_Merge_Metric_Name__c, new List<Account> { account });
+                    }
                 }
 
                 if (account.Id != null && account.C501_Merge_Action__c == 'Ignore') {
@@ -319,8 +348,25 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
                 update listAccountsMergeIgnore;
             }
 
-            if (listAccountsMerge.size() >= 2) {
-                c501MassMerge_SharedCode.AccountsMerge(listAccountsMerge);
+
+            for (List<Account> accounts :listAccountsMerge.values()) {
+                if (accounts.size() >= 2) {
+
+                    List<String> accountsMergeIds = new List<String>();
+                    for (Account account :accounts) {
+                        accountsMergeIds.add(String.valueOf(account.Id));
+                    }
+
+                    string strSoql = 
+                        'SELECT ' + String.join(listStrFields, ',');
+                    strSoql += ' FROM Account WHERE Id in (\'' + String.join(accountsMergeIds, '\',\'') + '\')';
+
+                    // Schedule Batch Job in Flex Queue (can schedule up to 100 jobs)
+                    C501_MassMerge_Batch batchMerge = new C501_MassMerge_Batch();
+                    batchMerge.query = strSoql;
+
+                    Database.executeBatch(batchMerge);
+                }
             }
 
             strSaveResults = recordsUpdated + ' ' + Label.labelMassMergeSaveSuccess;

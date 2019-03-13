@@ -6,6 +6,7 @@
         <members>C501_MM_Rule_Contact_FullNameDOBFullHH</members>
         <members>C501_MM_Rule_Contact_NameDOB</members>
         <members>C501_MM_Rule_Contact_NameDOBService</members>
+        <members>C501_MassMerge_Batch</members>
         <members>C501_MassMerge_Scheduler_TEST</members>
         <members>C501_MassMerge_SharedCode</members>
         <members>C501_MassMerge_SharedCode_TEST</members>
@@ -40,6 +41,7 @@
         <members>C501_Account_Merge__c.Merge_Action__c</members>
         <members>C501_Account_Merge__c.Merge_Confidence__c</members>
         <members>C501_Account_Merge__c.Merge_Metric__c</members>
+        <members>C501_Account_Merge__c.Merge_Metric_Name__c</members>
         <members>C501_Account_Merge__c.Merge_Target_Account__c</members>
         <members>C501_Account_Merge__c.Unique_Id__c</members>
         <members>C501_Merge_Metric__c.Total_Ignore__c</members>
