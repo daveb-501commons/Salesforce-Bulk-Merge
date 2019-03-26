@@ -33,20 +33,10 @@ global class C501_MassMerge_Batch implements Database.Batchable<sObject> {
     global String query;
 
     global Database.querylocator start(Database.BatchableContext BC) {
-        system.debug('C501_MassMerge_Batch::start - query: ' + query);
-        return Database.getQueryLocator(query);
+        return null;
     }
 
     global void execute(Database.BatchableContext info, List<sObject> scope) {
-
-        List<Account> accounts = new List<Account>();
-        for (sObject accountObject :scope) {
-            accounts.add((Account)accountObject);
-        }
-
-        C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
-        system.debug('C501_MassMerge_Batch::execute - accounts: ' + String.valueOf(accounts));
-        c501MassMerge_SharedCode.AccountsMerge(accounts);
     }
 
     global void finish(Database.BatchableContext info) {
